@@ -49,35 +49,6 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Set_CellValue_When_PositionValue_Supplied()
-        {
-            // Arrange
-            Position position1 = new(row: 2, column: 3);
-            int value1 = 1;
-
-            Position position2 = new(row: 5, column: 4);
-            int value2 = 2;
-
-            List<PositionValue> positionValues = new()
-            {
-                new PositionValue(position1, value1),
-                new PositionValue(position2, value2)
-            };
-
-            // Act
-            Sudoku.Grid grid = new(positionValues);
-
-            // Assert
-            Sudoku.Cell cell1 = grid.Cells[position1.Row, position1.Column];
-            cell1.Value.HasValue.Should().BeTrue();
-            cell1.Value.Should().Be(value1);
-
-            Sudoku.Cell cell2 = grid.Cells[position2.Row, position2.Column];
-            cell2.Value.HasValue.Should().BeTrue();
-            cell2.Value.Should().Be(value2);
-        }
-
-        [Fact]
         public void Should_Add_9_CellGroups_For_Rows()
         {
             // Arrange

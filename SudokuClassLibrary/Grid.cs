@@ -10,13 +10,9 @@ namespace SudokuClassLibrary
 {
     public class Grid
     {
-        public Grid(bool isKillerSodoku = false) : this(null, isKillerSodoku)
-        { }
-
-        public Grid(List<PositionValue>? positionValues, bool isKillerSodoku = false)
+        public Grid(bool isKillerSodoku = false)
         {
-            positionValues = positionValues ?? new List<PositionValue>();
-            InitializeCells(positionValues);
+            InitializeCells();
             AddGroups(isKillerSodoku);
         }
 
@@ -24,7 +20,7 @@ namespace SudokuClassLibrary
 
         public List<CellGroup> Groups { get; } = new();
 
-        private void InitializeCells(List<PositionValue> positionValues)
+        private void InitializeCells()
         {
             for (int row = 0; row < 9; row++)
             {
@@ -34,23 +30,6 @@ namespace SudokuClassLibrary
                     this.Cells[row, column] = cell;
                 }
             }
-
-            if (positionValues == null)
-            {
-                return;
-            }
-
-            foreach (var positionValue in positionValues)
-            {
-                SetCellValue(positionValue, isInitialValue: true);
-            }
-        }
-
-        private void SetCellValue(PositionValue positionValue, bool isInitialValue = false)
-        {
-            Cell cell = this.Cells[positionValue.Row, positionValue.Column];
-            cell.Value = positionValue.Value;
-            cell.IsInitialValue = isInitialValue;
         }
 
         private Cell GetCell(int row, int column)
