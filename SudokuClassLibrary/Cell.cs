@@ -156,6 +156,30 @@ namespace SudokuClassLibrary
             return _possibleValues.First();
         }
 
+        /// <summary>
+        /// Returns the Index of the parent Square this cell is a member of, if the parent square 
+        /// is set.
+        /// </summary>
+        /// <returns>Returns the Index of the parent Square this cell is a member of, if the parent 
+        /// square is set.  Otherwise returns null.</returns>
+        public int? GetParentSquareIndex()
+        {
+            return ParentGroups?.FirstOrDefault(pg => pg.GroupType == CellGroupType.Square)?.Index;
+        }
+
+        /// <summary>
+        /// Indicates whether the cell is on a diagonal in a Killer Sudoku game.
+        /// </summary>
+        /// <returns>true if the game is a Killer Sudoku, as opposed to a regular Sudoku, and the 
+        /// cell is on either the primary or secondary diagonal.  Otherwise returns false.</returns>
+        /// <remarks>In Killer Sudoku no value may be repeated on either the primary or secondary 
+        /// diagonal.  For regular Sudoku the diagonals can have repeated values.  So the diagonal 
+        /// is only important in Killer Sudoku and can be ignored in regular Sudoku.</remarks>
+        public bool IsOnKillerDiagonal()
+        {
+            return ParentGroups?.Any(pg => pg.GroupType == CellGroupType.Diagonal) ?? false;
+        }
+
         private void CheckNewPossibleValues(IEnumerable<int> newValues, bool throwOnNoNewValues = true)
         {
             string errorMessage =
