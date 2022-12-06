@@ -20,6 +20,28 @@ namespace SudokuClassLibrary
 
         public List<CellGroup> Groups { get; } = new();
 
+        private bool _isKillerSudoku = false;
+        public bool IsKillerSudoku 
+        {
+            get
+            {
+                return _isKillerSudoku;
+            }
+
+            set
+            {
+                _isKillerSudoku = value;
+                if (_isKillerSudoku)
+                {
+                    AddDiagonalGroups();
+                }
+                else
+                {
+                    RemoveDiagonalGroups();
+                }
+            }
+        }
+
         private void InitializeCells()
         {
             for (int row = 0; row < 9; row++)
@@ -109,9 +131,31 @@ namespace SudokuClassLibrary
             }
         }
 
+        private void RemoveDiagonalGroups()
+        {
+            if (this.Groups == null || !this.Groups.Any())
+            {
+                return;
+            }
+
+            this.Groups.RemoveAll(g => g.GroupType == CellGroupType.Diagonal);
+        }
+
+        private void AddDiagonalGroups()
+        {
+            AddPrimaryDiagonalGroup();
+            AddSecondaryDiagonalGroup();
+        }
+
         private void AddPrimaryDiagonalGroup()
         {
-            CellGroup group = new CellGroup(CellGroupType.Diagonal, 0);
+            int groupIndex = 0;
+            if (this.Groups?.Any(g => g.GroupType == CellGroupType.Diagonal && g.Index == groupIndex) ?? false)
+            {
+                return;
+            }
+
+            CellGroup group = new CellGroup(CellGroupType.Diagonal, groupIndex);
 
             for (int i = 0; i < 9; i++)
             {
@@ -119,12 +163,18 @@ namespace SudokuClassLibrary
                 group.AddCell(cell);
             }
 
-            this.Groups.Add(group);
+            this.Groups?.Add(group);
         }
 
         private void AddSecondaryDiagonalGroup()
         {
-            CellGroup group = new CellGroup(CellGroupType.Diagonal, 1);
+            int groupIndex = 1;
+            if (this.Groups?.Any(g => g.GroupType == CellGroupType.Diagonal && g.Index == groupIndex) ?? false)
+            {
+                return;
+            }
+
+            CellGroup group = new CellGroup(CellGroupType.Diagonal, groupIndex);
 
             for (int row = 0; row < 9; row++)
             {
@@ -134,7 +184,7 @@ namespace SudokuClassLibrary
                 group.AddCell(cell);
             }
 
-            this.Groups.Add(group);
+            this.Groups?.Add(group);
         }
     }
 }
