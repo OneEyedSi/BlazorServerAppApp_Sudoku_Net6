@@ -1,6 +1,8 @@
 ﻿using Sudoku = SudokuClassLibrary;
 using Xunit;
 using FluentAssertions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SudokuClassLibrary.Tests.Cell
 {
@@ -113,9 +115,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new Sudoku.Cell(row, column);
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(pv => (pv >= 1 && pv <= 9));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValuesSetToRange(minValue: 1, maxValue: 9);
         }
 
         [Fact]
@@ -130,9 +130,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new Sudoku.Cell(position);
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(pv => (pv >= 1 && pv <= 9));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValuesSetToRange(minValue: 1, maxValue: 9);
         }
 
         [Fact]
@@ -150,7 +148,7 @@ namespace SudokuClassLibrary.Tests.Cell
         }
 
         [Fact]
-        public void Should_Clear_IsInitialValue_When_InitialValue_NOtSpecified_With_Position()
+        public void Should_Clear_IsInitialValue_When_InitialValue_NotSpecified_With_Position()
         {
             // Arrange
             int row = 1;

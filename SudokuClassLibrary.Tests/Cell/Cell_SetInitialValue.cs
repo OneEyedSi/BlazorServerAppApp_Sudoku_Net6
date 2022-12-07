@@ -2,6 +2,8 @@
 using Xunit;
 using FluentAssertions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SudokuClassLibrary.Tests.Cell
 {
@@ -62,9 +64,7 @@ namespace SudokuClassLibrary.Tests.Cell
             cell.SetInitialValue(newValue);
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(pv => (pv >= 1 && pv <= 9));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValuesSetToRange(1, 9);
         }
 
         [Fact]
@@ -133,12 +133,13 @@ namespace SudokuClassLibrary.Tests.Cell
             // Arrange
             int? newValue = 4;
             Sudoku.Cell cell = new Sudoku.Cell(1, 1);
+            int expectedValue = newValue.Value;
 
             // Act
             cell.SetInitialValue(newValue);
 
             // Assert
-            cell.Value.Value.Should().Be(newValue.Value);
+            cell.Value.ShouldHaveExpectedValue(expectedValue);
         }
 
         [Fact]
@@ -161,14 +162,13 @@ namespace SudokuClassLibrary.Tests.Cell
             // Arrange
             int? newValue = 4;
             Sudoku.Cell cell = new Sudoku.Cell(1, 1);
+            int expectedValue = newValue.Value;
 
             // Act
             cell.SetInitialValue(newValue);
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(1)
-                .And.OnlyContain(pv => (pv == newValue.Value));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValueSet(expectedValue);
         }
     }
 }

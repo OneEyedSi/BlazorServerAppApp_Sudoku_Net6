@@ -13,8 +13,7 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            var possibleValues = new[] { 1, 2, 3 };
-            cell.SetPossibleValues(possibleValues);
+            cell.SetPossibleValueRange(1, 3);
 
             // Act
 
@@ -27,8 +26,7 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            var possibleValues = new[] { 1 };
-            cell.SetPossibleValues(possibleValues);
+            cell.SetPossibleValue(1);
 
             // Act
 

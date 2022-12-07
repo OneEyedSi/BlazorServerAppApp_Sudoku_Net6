@@ -55,7 +55,11 @@ namespace SudokuClassLibrary.Tests.Cell
             int? parentSquareIndex = cell.GetParentSquareIndex();
 
             // Assert
+            parentSquareIndex.Should().NotBeNull();
+
+#pragma warning disable CS8629 // Nullable value type may be null.
             parentSquareIndex.Value.Should().Be(squareIndex);
+#pragma warning restore CS8629 // Nullable value type may be null.
         }
     }
 }

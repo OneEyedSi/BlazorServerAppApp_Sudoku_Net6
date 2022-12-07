@@ -3,6 +3,8 @@ using Xunit;
 using FluentAssertions;
 using System;
 using FluentAssertions.Events;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SudokuClassLibrary.Tests.Cell
 {
@@ -47,9 +49,7 @@ namespace SudokuClassLibrary.Tests.Cell
             cell.Value = newValue;
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(pv => (pv >= 1 && pv <= 9));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValuesSetToRange(1, 9);
         }
 
         [Fact]
@@ -85,6 +85,21 @@ namespace SudokuClassLibrary.Tests.Cell
         }
 
         [Fact]
+        public void Should_Change_Value_When_Set_ValidValue()
+        {
+            // Arrange
+            int? newValue = 4;
+            Sudoku.Cell cell = new(1, 1);
+            int expectedValue = newValue.Value;
+
+            // Act
+            cell.Value = newValue;
+
+            // Assert
+            cell.Value.ShouldHaveExpectedValue(expectedValue);
+        }
+
+        [Fact]
         public void Should_Set_HasValueSet_When_Set_ValidValue()
         {
             // Arrange
@@ -104,14 +119,13 @@ namespace SudokuClassLibrary.Tests.Cell
             // Arrange
             int? newValue = 4;
             Sudoku.Cell cell = new(1, 1);
+            int expectedValue = newValue.Value;
 
             // Act
             cell.Value = newValue;
 
             // Assert
-            cell.GetPossibleValues().Should().NotBeNullOrEmpty()
-                .And.HaveCount(1)
-                .And.OnlyContain(pv => (pv == newValue.Value));
+            cell.GetPossibleValuesDictionary().ShouldHaveExpectedValueSet(expectedValue);
         }
 
         [Fact]
@@ -164,6 +178,24 @@ namespace SudokuClassLibrary.Tests.Cell
             // Assert
             monitoredCell.Should()
                 .NotRaise("CellValueChanged");
+        }
+
+        [Fact]
+        public void Should_Not_Change_Value_When_IsInitialValue_Set()
+        {
+            // Arrange
+            int? initialValue = 4;
+            int? newValue = 5;
+            Sudoku.Cell cell = new(1, 1);
+            cell.Value = initialValue;
+            cell.IsInitialValue = true;
+            int expectedValue = initialValue.Value;
+
+            // Act
+            cell.Value = newValue;
+
+            // Assert
+            cell.Value.ShouldHaveExpectedValue(expectedValue);
         }
     }
 }

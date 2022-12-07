@@ -52,7 +52,7 @@ namespace SudokuClassLibrary
 
         private void InitializeAvailableValues()
         {
-            _availableValues = Enumerable.Range(1, 9).ToList();
+            _availableValues = Enumerable.Range(start: 1, count: 9).ToList();
         }
 
         #region Events and Event Handlers *********************************************************

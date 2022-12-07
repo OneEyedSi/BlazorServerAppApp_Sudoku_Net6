@@ -1,8 +1,6 @@
-﻿using System;
-using Sudoku = SudokuClassLibrary;
+﻿using Sudoku = SudokuClassLibrary;
 using Xunit;
 using FluentAssertions;
-using System.Collections.ObjectModel;
 
 namespace SudokuClassLibrary.Tests.Cell
 {
@@ -13,13 +11,15 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            var possibleValues = new[] { 1, 2, 3 };
-            cell.SetPossibleValues(possibleValues);
+            int minValue = 2;
+            int maxValue = 5;
+            cell.SetPossibleValueRange(minValue, maxValue);
 
             // Act
+            int? onlyPossibleValue = cell.GetOnlyPossibleValue();
 
             // Assert
-            cell.GetOnlyPossibleValue().HasValue.Should().BeFalse();
+            onlyPossibleValue.HasValue.Should().BeFalse();
         }
 
         [Fact]
@@ -27,13 +27,14 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            var possibleValues = new[] { 1 };
-            cell.SetPossibleValues(possibleValues);
+            int possibleValue = 4;
+            cell.SetPossibleValue(possibleValue);
 
             // Act
+            int? onlyPossibleValue = cell.GetOnlyPossibleValue();
 
             // Assert
-            cell.GetOnlyPossibleValue().Should().Be(1);
+            onlyPossibleValue.Should().Be(possibleValue);
         }
 
         [Fact]
@@ -41,12 +42,14 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = 4;
+            int newValue = 4;
+            cell.Value = newValue;
 
             // Act
+            int? onlyPossibleValue = cell.GetOnlyPossibleValue();
 
             // Assert
-            cell.GetOnlyPossibleValue().Should().Be(4);
+            onlyPossibleValue.Should().Be(newValue);
         }
 
         [Fact]
@@ -58,9 +61,10 @@ namespace SudokuClassLibrary.Tests.Cell
 
             // Act
             cell.Value = null;
+            int? onlyPossibleValue = cell.GetOnlyPossibleValue();
 
             // Assert
-            cell.GetOnlyPossibleValue().HasValue.Should().BeFalse();
+            onlyPossibleValue.HasValue.Should().BeFalse();
         }
     }
 }

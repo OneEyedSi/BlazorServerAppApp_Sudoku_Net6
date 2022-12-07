@@ -55,6 +55,12 @@ namespace SudokuClassLibrary
 
             set
             {
+                // Cannot change cell value if it was one of the initial values in the game.
+                if (IsInitialValue)
+                {
+                    return;
+                }
+
                 CheckNewValue(value, this.GetCallerName());
                 int? previousValue = _value;
                 _value = value;
@@ -82,65 +88,51 @@ namespace SudokuClassLibrary
 
         public void SetInitialValue(int? value)
         {
+            // Must clear IsInitialValue because, if it were previously set, it would prevent Value 
+            // from being set.
+            IsInitialValue = false;
             Value = value;
             IsInitialValue = value.HasValue;
-            ResetPossibleValues();
         }
 
-        private List<int> _possibleValues = new();
-
-        public ReadOnlyCollection<int> GetPossibleValues()
+        public void RemoveInitialValue()
         {
-            return _possibleValues.AsReadOnly();
+            SetInitialValue(null);
         }
 
-        public ReadOnlyCollection<int> SetPossibleValue(int possibleValue)
+        private Dictionary<int, bool> _possibleValues = new();
+
+        /// <summary>
+        /// Returns a read-only dictionary with nine elements, representing the nine possible 
+        /// values the cell could have.  Any element set to true indicates that corresponding 
+        /// key value is a possible value for the cell.
+        /// </summary>
+        /// <returns></returns>
+        public IReadOnlyDictionary<int, bool> GetPossibleValuesDictionary()
         {
-            var possibleValues = new List<int> { possibleValue };
-            return SetPossibleValues(possibleValues);
-        }
-
-        public ReadOnlyCollection<int> SetPossibleValues(IEnumerable<int> possibleValues)
-        {
-            CheckNewPossibleValues(possibleValues);
-            _possibleValues = DeDuplicateAndSortEnumerable(possibleValues);
-            return _possibleValues.AsReadOnly();
-        }
-
-        public ReadOnlyCollection<int> AddPossibleValue(int valueToAdd)
-        {
-            var valuesToAdd = new List<int> { valueToAdd };
-            return AddPossibleValues(valuesToAdd);
-        }
-
-        public ReadOnlyCollection<int> AddPossibleValues(IEnumerable<int> valuesToAdd)
-        {
-            CheckNewPossibleValues(valuesToAdd, throwOnNoNewValues: false);
-            _possibleValues.AddRange(valuesToAdd);
-            _possibleValues = DeDuplicateAndSortEnumerable(_possibleValues);
-
-            return _possibleValues.AsReadOnly();
-        }
-
-        public ReadOnlyCollection<int> RemovePossibleValue(int valueToRemove)
-        {
-            var valuesToRemove = new List<int> { valueToRemove };
-            return RemovePossibleValues(valuesToRemove);
-        }
-
-        public ReadOnlyCollection<int> RemovePossibleValues(IEnumerable<int> valuesToRemove)
-        {
-            _possibleValues.RemoveAll(x => valuesToRemove.Contains(x));
-
-            if (!_possibleValues.Any())
+            // This should never happen as we only expose _possibleValues as read-only.
+            // But let's be safe.
+            if (!(_possibleValues?.Any() ?? false))
             {
-                // Restore the previous values before throwing.
-                _possibleValues = new List<int>(valuesToRemove);
-
-                throw new InvalidOperationException($"Invalid operation: Cell {Position} has no possible values left.");
+                ResetPossibleValues();
             }
 
-            return _possibleValues.AsReadOnly();
+            return new ReadOnlyDictionary<int, bool>(_possibleValues);
+        }
+
+        public IReadOnlyCollection<int> GetPossibleValuesList()
+        {
+            IReadOnlyDictionary<int, bool> possibleValuesDictionary = GetPossibleValuesDictionary();
+            var possibleValuesSet = possibleValuesDictionary
+                                        .Where(kvp => kvp.Value == true)
+                                        .Select(kvp => kvp.Key)
+                                        .ToList();
+            return possibleValuesSet;
+        }
+
+        public int GetNumberOfPossibleValues()
+        {
+            return GetPossibleValuesList().Count;
         }
 
         /// <summary>
@@ -148,12 +140,12 @@ namespace SudokuClassLibrary
         /// </summary>
         public int? GetOnlyPossibleValue()
         {
-            if (_possibleValues.Count > 1)
+            if (GetNumberOfPossibleValues() > 1)
             {
                 return null;
             }
 
-            return _possibleValues.First();
+            return _possibleValues.FirstOrDefault(kvp => kvp.Value == true).Key;
         }
 
         /// <summary>
@@ -180,29 +172,6 @@ namespace SudokuClassLibrary
             return ParentGroups?.Any(pg => pg.GroupType == CellGroupType.Diagonal) ?? false;
         }
 
-        private void CheckNewPossibleValues(IEnumerable<int> newValues, bool throwOnNoNewValues = true)
-        {
-            string errorMessage =
-                "Invalid value: Cannot set possible values as empty; possible values must always have at least one value.";
-            if (throwOnNoNewValues)
-            {
-                if (newValues == null)
-                {
-                    throw new ArgumentNullException(errorMessage);
-                }
-
-                if (!newValues.Any())
-                {
-                    throw new ArgumentException(errorMessage);
-                }
-            }
-
-            foreach (var value in newValues)
-            {
-                CheckNewValue(value, this.GetCallerName());
-            }
-        }
-
         private static void CheckNewValue(int? newValue, string propertyName)
         {
             if (newValue.HasValue && (newValue.Value < 1 || newValue.Value > 9))
@@ -212,24 +181,19 @@ namespace SudokuClassLibrary
             }
         }
 
-        private List<int> DeDuplicateAndSortEnumerable(IEnumerable<int> originalEnumerable)
-        {
-            if (originalEnumerable == null || !originalEnumerable.Any())
-            {
-                return new List<int>();
-            }
-
-            return originalEnumerable.Distinct().OrderBy(x => x).ToList();
-        }
-
         private void ResetPossibleValues()
         {
-            if (_value.HasValue)
+            if (_possibleValues == null)
             {
-                _possibleValues = new List<int> { _value.Value };
-                return;
+                _possibleValues = new();
             }
-            _possibleValues = Enumerable.Range(1, 9).ToList();
+
+            bool setAllPossibleValues = !_value.HasValue;
+
+            for(int i = 1; i <= 9; i++)
+            {
+                _possibleValues[i] = setAllPossibleValues || i == _value.Value;
+            }
         }
 
         #endregion
@@ -261,8 +225,17 @@ namespace SudokuClassLibrary
                     hashSet.IntersectWith(parentGroup.GetAvailableValues());
                 }
             }
+            
+            // Should be illegal: No parent group.  But then what raised the event this method handled?
+            if (hashSet == null)
+            {
+                _possibleValues = new();
+            }
 
-            _possibleValues = hashSet == null ? new List<int>() : hashSet.ToList();
+            for (int i = 1; i <= 9; i++)
+            {
+                _possibleValues[i] = hashSet == null || hashSet.Contains(i);
+            }
         }
 
         #endregion 
