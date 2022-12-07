@@ -42,6 +42,32 @@ namespace SudokuClassLibrary
             }
         }
 
+        public void ResetGame()
+        {
+            // Assume if the first cell is null they all will be.
+            if (this.Cells[0, 0] == null)
+            {
+                InitializeCells();
+                AddGroups(this.IsKillerSudoku);
+            }
+            else 
+            { 
+                foreach (var cell in this.Cells)
+                {
+                    cell.Value = null;
+                }
+
+                if (this.IsKillerSudoku)
+                {
+                    AddDiagonalGroups();
+                }
+                else
+                {
+                    RemoveDiagonalGroups();
+                }
+            }
+        }
+
         private void InitializeCells()
         {
             for (int row = 0; row < 9; row++)
@@ -67,8 +93,7 @@ namespace SudokuClassLibrary
 
             if (isKillerSodoku)
             {
-                AddPrimaryDiagonalGroup();
-                AddSecondaryDiagonalGroup();
+                AddDiagonalGroups();
             }
         }
 

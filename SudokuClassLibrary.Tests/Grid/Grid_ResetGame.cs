@@ -1,25 +1,22 @@
 ﻿using Sudoku = SudokuClassLibrary;
 using Xunit;
 using FluentAssertions;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Data.Common;
-using System.Text.RegularExpressions;
-using System;
+using System.Collections;
 
 namespace SudokuClassLibrary.Tests.Grid
 {
-    public class Grid_Constructor
+    public class Grid_ResetGame
     {
         [Fact]
-        public void Should_Create_9x9_CellArray()
+        public void Should_ResultIn_9x9_CellArray()
         {
             // Arrange
+            Sudoku.Grid grid = new();
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.ResetGame();
 
             // Assert
             var cellsArray = grid.Cells;
@@ -30,24 +27,26 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Populate_CellArray()
+        public void Should_ResultIn_No_Null_Cells_In_CellArray()
         {
             // Arrange
+            Sudoku.Grid grid = new();
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.ResetGame();
 
             // Assert
             grid.Cells.Cast<Sudoku.Cell>().Should().NotContainNulls();
         }
 
         [Fact]
-        public void Should_Add_9_CellGroups_For_Rows()
+        public void Should_ResultIn_9_CellGroups_For_Rows()
         {
             // Arrange
+            Sudoku.Grid grid = new();
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.ResetGame();
 
             // Assert
             for (int row = 0; row < 9; row++)
@@ -58,7 +57,10 @@ namespace SudokuClassLibrary.Tests.Grid
                 var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                 group.Should().NotBeNull();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
                 groupCells.Should().NotBeNullOrEmpty()
                     .And.HaveCount(9)
                     .And.OnlyContain(c => c.Position.Row == row
@@ -67,12 +69,13 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Add_9_CellGroups_For_Columns()
+        public void Should_ResultIn_9_CellGroups_For_Columns()
         {
             // Arrange
+            Sudoku.Grid grid = new();
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.ResetGame();
 
             // Assert
             for (int column = 0; column < 9; column++)
@@ -83,21 +86,25 @@ namespace SudokuClassLibrary.Tests.Grid
                 var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                 group.Should().NotBeNull();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
                 groupCells.Should().NotBeNullOrEmpty()
                     .And.HaveCount(9)
-                    .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9 
+                    .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9
                                         && c.Position.Column == column);
             }
         }
 
         [Fact]
-        public void Should_Add_9_CellGroups_For_Squares()
+        public void Should_ResultIn_9_CellGroups_For_Squares()
         {
             // Arrange
+            Sudoku.Grid grid = new();
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.ResetGame();
 
             // Assert
             for (int row = 0; row < 9; row += 3)
@@ -105,12 +112,15 @@ namespace SudokuClassLibrary.Tests.Grid
                 for (int column = 0; column < 9; column += 3)
                 {
                     CellGroupType groupType = CellGroupType.Square;
-                    int index = (row * 9 + column) / 3; 
+                    int index = (row * 9 + column) / 3;
 
                     var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                     group.Should().NotBeNull();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                     var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
                     int endRow = row + 2;
                     int endColumn = column + 2;
                     groupCells.Should().NotBeNullOrEmpty()
@@ -124,12 +134,14 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_NotAdd_CellGroups_For_Diagonals_ByDefault()
+        public void Should_Remove_CellGroups_For_Diagonals_When_IsKillerSudoku_False()
         {
             // Arrange
+            Sudoku.Grid grid = new(isKillerSodoku: true);
 
             // Act
-            Sudoku.Grid grid = new();
+            grid.IsKillerSudoku = false;
+            grid.ResetGame();
 
             // Assert
             var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == CellGroupType.Diagonal);
@@ -137,12 +149,14 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Add_CellGroups_For_Diagonals_When_isKillerSudoku_Set()
+        public void Should_ResultIn_CellGroups_For_Diagonals_When_IsKillerSudoku_Set()
         {
             // Arrange
+            Sudoku.Grid grid = new(isKillerSodoku: false);
 
             // Act
-            Sudoku.Grid grid = new(isKillerSodoku: true);
+            grid.IsKillerSudoku = true;
+            grid.ResetGame();
 
             // Assert
             var groups = grid.Groups.Where(cg => cg.GroupType == CellGroupType.Diagonal);
@@ -151,18 +165,23 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Add_CellGroup_For_PrimaryDiagonal_When_isKillerSudoku_Set()
+        public void Should_ResultIn_CellGroup_For_PrimaryDiagonal_When_IsKillerSudoku_Set()
         {
             // Arrange
+            Sudoku.Grid grid = new(isKillerSodoku: false);
 
             // Act
-            Sudoku.Grid grid = new(isKillerSodoku: true);
+            grid.IsKillerSudoku = true;
+            grid.ResetGame();
 
             // Assert
             var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 0);
             group.Should().NotBeNull();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
             groupCells.Should().NotBeNullOrEmpty()
                 .And.HaveCount(9)
                 .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9
@@ -170,22 +189,52 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Add_CellGroup_For_SecondaryDiagonal_When_isKillerSudoku_Set()
+        public void Should_ResultIn_CellGroup_For_SecondaryDiagonal_When_IsKillerSudoku_Set()
         {
             // Arrange
+            Sudoku.Grid grid = new(isKillerSodoku: false);
 
             // Act
-            Sudoku.Grid grid = new(isKillerSodoku: true);
+            grid.IsKillerSudoku = true;
+            grid.ResetGame();
 
             // Assert
             var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 1);
             group.Should().NotBeNull();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
             groupCells.Should().NotBeNullOrEmpty()
                 .And.HaveCount(9)
                 .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9
                                     && c.Position.Column == (8 - c.Position.Row));
+        }
+
+        [Fact]
+        public void Should_Remove_CellValues_When_PreviouslySet()
+        {
+            // Arrange
+            Sudoku.Grid grid = new();
+            for (int row = 0; row < 9; row++)
+            {
+                for (int column = 0; column < 9; column++) 
+                { 
+                    var cell = grid.Cells[row, column];
+                    cell.Value = ((column + row) % 9) + 1;
+                }
+            }
+
+            int numberOfCellsWithValuesBefore = grid.Cells.Cast<Sudoku.Cell>().Count(c => c.Value.HasValue);
+
+            // Act
+            grid.ResetGame();
+
+            // Assert
+            int numberOfCellsWithValuesAfter = grid.Cells.Cast<Sudoku.Cell>().Count(c => c.Value.HasValue);
+            numberOfCellsWithValuesBefore.Should().Be(81);
+            numberOfCellsWithValuesAfter.Should().Be(0);
         }
     }
 }
