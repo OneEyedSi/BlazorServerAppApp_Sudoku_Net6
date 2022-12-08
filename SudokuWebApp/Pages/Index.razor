@@ -1,11 +1,29 @@
 ﻿@page "/"
+@inject GameState GameState
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="main">
+    <h1>Sudoku!</h1>
 
-Welcome to your new app.
+    @if (GameState == null)
+    {
+        <p>Loading game board ...</p>
+    }
+    else
+    {        
+        <table>
+            @for (int row = 0; row < 9; row++)
+            {
+                <tr>
+                    @for (int column = 0; column < 9; column++)
+                    {
+                        <td class="grid">@row,@column</td>
+                    }
+                </tr>
+            }
+        </table>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    }
 
-<Counter IncrementAmount="10" />
+</div>
