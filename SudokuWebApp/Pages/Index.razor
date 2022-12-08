@@ -44,7 +44,7 @@
         </div>
 
         <div>
-            <button class="btn btn-success ml-auto" @onclick="StartGame">Start new game</button>
+                <button class="btn btn-success ml-auto" @onclick="ToggleKillerSudoku">Toggle Killer Sudoku</button>
         </div>
     }
 
@@ -77,5 +77,10 @@
     private void CloseDialog()
     {
         ShowSingleButtonDialog = false;
+    }
+
+    private void ToggleKillerSudoku()
+    {
+        GameState.IsKillerSudoku = !GameState.IsKillerSudoku;
     }
 }

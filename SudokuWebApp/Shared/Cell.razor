@@ -1,6 +1,6 @@
 ﻿@using Library = SudokuClassLibrary
 
-<div class="cell-container cellbackground-default">
+<div class="cell-container @CellBackgroundClass">
   <table class="possiblevalues-table">
       <tr>
           <td class="hide">1</td>
@@ -52,6 +52,34 @@
                 }
             }
             return _cellState;
+        }
+    }
+
+    private string CellBackgroundClass
+    {
+        get
+        {
+            int parentSquareIndex = CellState?.GetParentSquareIndex() ?? -1;
+
+            if (parentSquareIndex == -1)
+            {
+                return "cellbackground-default";
+            }
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            if (CellState.IsOnKillerDiagonal())
+            {
+                return "cellbackground-diagonal";
+            }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+            bool isEvenSquare = (parentSquareIndex % 2 == 0);
+
+            if (isEvenSquare)
+            {
+                return "cellbackground-evensquare";
+            }
+
+            return "cellbackground-oddsquare";
         }
     }
 }
