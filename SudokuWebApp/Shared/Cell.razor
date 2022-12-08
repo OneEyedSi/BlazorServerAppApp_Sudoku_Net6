@@ -1,0 +1,57 @@
+﻿@using Library = SudokuClassLibrary
+
+<div class="cell-container cellbackground-default">
+  <table class="possiblevalues-table">
+      <tr>
+          <td class="hide">1</td>
+          <td>2</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td class="show">4</td>
+          <td class="hide">5</td>
+          <td>6</td>
+      </tr>
+      <tr>
+          <td>7</td>
+          <td>8</td>
+          <td>9</td>
+      </tr>
+  </table>
+
+  <span class="cell-value show">5</span>
+  <form>
+    <input class="cell-newvalue hide" type="text" id="newvalue" name="newvalue" />
+  </form>
+</div>
+
+@code {
+    [Parameter()]
+    public GameState? GameState { get; set; }
+
+    [Parameter()]
+    public int CellRow { get; set; } = 0;
+
+    [Parameter()]
+    public int CellColumn { get; set; } = 0;
+
+    private Library.Cell? _cellState;
+    private Library.Cell? CellState
+    {
+        get
+        {
+            if (_cellState == null)
+            {
+                if (GameState == null || GameState.GameGrid == null)
+                {
+                    _cellState = null;
+                }
+                else
+                {
+                    _cellState = GameState.GameGrid.Cells[CellRow, CellColumn];
+                }
+            }
+            return _cellState;
+        }
+    }
+}

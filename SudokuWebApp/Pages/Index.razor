@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using SudokuClassLibrary
 @inject GameState GameState
 
 <PageTitle>Index</PageTitle>
@@ -18,7 +19,12 @@
                 <tr>
                     @for (int column = 0; column < 9; column++)
                     {
-                        <td class="grid">@row,@column</td>
+                        <td class="grid">
+                            <Cell
+                                GameState="GameState"
+                                CellRow="@row"
+                                CellColumn="@column" />
+                        </td>
                     }
                 </tr>
             }
@@ -36,6 +42,10 @@
         <div class="page-buttons-single">
             <button class="btn btn-success" @onclick="ShowDialog">Open dialog</button>
         </div>
+
+        <div>
+            <button class="btn btn-success ml-auto" @onclick="StartGame">Start new game</button>
+        </div>
     }
 
 </div>
@@ -44,6 +54,20 @@
 {
     private bool ShowSingleButtonDialog { get; set; } = false;
 
+    private void StartGame()
+    {
+        List<GameStatus> statusesToDisplayStartDialog = new()
+        {
+            GameStatus.Unknown,
+            GameStatus.PreStart,
+            GameStatus.Starting, 
+            GameStatus.Cancelled,
+            GameStatus.Finished
+        };
+
+        //ShowStartDialog = statusesToDisplayStartDialog.Contains(GameState.Status);
+        ShowSingleButtonDialog = true;
+    }
 
     private void ShowDialog()
     {
