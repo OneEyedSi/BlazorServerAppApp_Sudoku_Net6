@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SudokuClassLibrary;
 using SudokuWebApp.Data;
+using SudokuWebApp.Shared.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 

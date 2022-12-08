@@ -24,6 +24,34 @@
             }
         </table>
 
+        if (@ShowSingleButtonDialog)
+        {
+            <SingleButtonDialog
+                Type="DialogType.Warning"
+                Title="This will be included"
+                Message="OMG, nothing happened."
+                OnClose="CloseDialog" />
+        }
+
+        <div class="page-buttons-single">
+            <button class="btn btn-success" @onclick="ShowDialog">Open dialog</button>
+        </div>
     }
 
 </div>
+
+@code
+{
+    private bool ShowSingleButtonDialog { get; set; } = false;
+
+
+    private void ShowDialog()
+    {
+        ShowSingleButtonDialog = true;
+    }
+
+    private void CloseDialog()
+    {
+        ShowSingleButtonDialog = false;
+    }
+}

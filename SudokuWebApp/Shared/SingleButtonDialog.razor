@@ -1,0 +1,82 @@
+﻿<div class="dialog-container">
+    <div class="dialog">
+        <div class="@TitleBarClass">
+            <img src="@IconPath" width="30" height="30" />
+            <span>@Title</span>
+        </div>
+        <form class="dialog-body">
+            <div>
+                <span>@Message</span>
+            </div>
+        </form>
+
+        <div class="dialog-buttons-single">
+            <button class="btn btn-success" @onclick="OnClose">OK</button>
+        </div>
+    </div>
+</div>
+
+@code 
+{
+    [Parameter] public DialogType Type { get; set; }
+
+    private string? _title;
+    [Parameter] public string? Title
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.Error:
+                    return "ERROR!";
+                case DialogType.Warning:
+                    return "Warning!";
+                default:
+                    return _title;
+            }
+        }
+        set
+        {
+            _title = value;            
+        }
+    }
+
+    [Parameter] public string? Message { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string IconPath
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.Error:
+                    return "img/rodentia-icons_dialog-error-noshadow.svg";
+                case DialogType.Warning:
+                    return "img/rodentia-icons-dialog-warning-icon-noshadow.svg";
+                case DialogType.Info:
+                    return "img/rodentia-icons-dialog-information-icon-noshadow.svg";
+            }
+            return string.Empty;
+        }
+    }
+
+    private string TitleBarClass
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.Error:
+                    return "dialog-title-error";
+                case DialogType.Warning:
+                    return "dialog-title-warning";
+                case DialogType.Info:
+                    return "dialog-title-info";
+                default:
+                    return "dialog-title-generic";
+            }
+        }
+    }
+}
