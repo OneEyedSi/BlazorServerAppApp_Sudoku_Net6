@@ -45,6 +45,9 @@ namespace SudokuClassLibrary
 
         public Position Position { get; }
 
+        public int Row => Position.Row;
+        public int Column => Position.Column;
+
         private int? _value;
         public int? Value
         {

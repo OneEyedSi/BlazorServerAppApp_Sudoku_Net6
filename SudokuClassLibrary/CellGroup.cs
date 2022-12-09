@@ -41,6 +41,24 @@ namespace SudokuClassLibrary
             }
         }
 
+        public static int GetSquareIndexForCell(Cell cell)
+        {
+            int squareIndexForCell = GetSquareIndexForRowAndColumn(cell.Row, cell.Column);
+            return squareIndexForCell;
+        }
+
+        public static int GetSquareIndexForRowAndColumn(int row, int column)
+        {
+            if (row < 0 || column < 0 || row > 8 || column > 8)
+            {
+                return -1;
+            }
+
+            // (row / 3) and (column / 3) are integer division.
+            int squareIndexForCell = (row / 3) * 3 + (column / 3);
+            return squareIndexForCell;
+        }
+
         private void RecalculateAvailableValues()
         {
             InitializeAvailableValues();

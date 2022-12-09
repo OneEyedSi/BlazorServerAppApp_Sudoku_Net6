@@ -112,7 +112,7 @@ namespace SudokuClassLibrary.Tests.Grid
                 for (int column = 0; column < 9; column += 3)
                 {
                     CellGroupType groupType = CellGroupType.Square;
-                    int index = (row * 9 + column) / 3;
+                    int index = Sudoku.CellGroup.GetSquareIndexForRowAndColumn(row, column);
 
                     var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                     group.Should().NotBeNull();

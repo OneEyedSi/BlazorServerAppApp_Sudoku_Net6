@@ -100,25 +100,79 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new();
 
             // Assert
-            for (int row = 0; row < 9; row += 3)
+            CellGroupType groupType = CellGroupType.Square;
+            for (int row = 0; row <= 8; row += 3)
             {
-                for (int column = 0; column < 9; column += 3)
+                for (int column = 0; column <= 8; column += 3)
                 {
-                    CellGroupType groupType = CellGroupType.Square;
-                    int index = (row * 9 + column) / 3; 
+                    int index = Sudoku.CellGroup.GetSquareIndexForRowAndColumn(row, column);
 
                     var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                     group.Should().NotBeNull();
+                }
+            }
+        }
 
+        [Fact]
+        public void Should_Have_CorrectCells_In_CellGroups_For_Squares()
+        {
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int row = 0; row <= 8; row += 3)
+            {
+                for (int column = 0; column <= 8; column += 3)
+                {
+                    CellGroupType groupType = CellGroupType.Square;
+                    int index = Sudoku.CellGroup.GetSquareIndexForRowAndColumn(row, column);
+                    var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                     var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                     int endRow = row + 2;
                     int endColumn = column + 2;
                     groupCells.Should().NotBeNullOrEmpty()
                         .And.HaveCount(9)
-                        .And.OnlyContain((c => c.Position.Row >= row && c.Position.Row <= endRow
-                                            && c.Position.Column >= column && c.Position.Column <= endColumn),
+                        .And.OnlyContain((c => c.Row >= row && c.Row <= endRow
+                                            && c.Column >= column && c.Column <= endColumn),
                            "because Square {0} should contain cells between positions ({1}, {2}) and ({3}, {4})",
                             index, row, column, endRow, endColumn);
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Set_Correct_ParentGroup_For_Cells_In_SquareGroups()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int i = 0; i<= 8; i++)
+            {
+                var group = grid.GetSquareGroup(i);
+
+                var cellsThatShouldBeInGroup = grid.GetCellsThatShouldBeInSquare(i);
+                foreach (var cell in cellsThatShouldBeInGroup)
+                {
+                    var matchingParentGroups =
+                        cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Square && pg.Index == i);
+                    matchingParentGroups
+                        .Should().NotBeNull()
+                        .And.ContainSingle();
+                    var matchingParentGroup = matchingParentGroups.First();
+                    matchingParentGroup.Should().BeSameAs(group);
                 }
             }
         }

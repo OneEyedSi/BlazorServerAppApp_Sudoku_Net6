@@ -131,6 +131,7 @@ namespace SudokuClassLibrary
 
         private void AddSquareGroups()
         {
+            // row and column of top left cell in each square.
             for (int row = 0; row < 9; row += 3)
             {
                 for (int column = 0; column < 9; column += 3)
@@ -139,7 +140,7 @@ namespace SudokuClassLibrary
                     //  0,1,2
                     //  3,4,5
                     //  6,7,8
-                    int squareIndex = (row * 9 + column) / 3;
+                    int squareIndex = CellGroup.GetSquareIndexForRowAndColumn(row, column);
                     CellGroup group = new CellGroup(CellGroupType.Square, squareIndex);
 
                     for (int rowOffset = 0; rowOffset < 3; rowOffset++)
