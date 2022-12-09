@@ -41,6 +41,18 @@ namespace SudokuClassLibrary
             }
         }
 
+        public void RemoveCell(Cell cellToAddToGroup, bool doRecalculateValues = true)
+        {
+            Cells.Remove(cellToAddToGroup);
+            RecalculateCellPossibleValues -= cellToAddToGroup.ParentGroup_RecalculateCellPossibleValues;
+            cellToAddToGroup.CellValueChanged -= Cell_CellValueChanged;
+            cellToAddToGroup.ParentGroups.Remove(this);
+            if (doRecalculateValues)
+            {
+                RecalculateAvailableValues();
+            }
+        }
+
         public static int GetSquareIndexForCell(Cell cell)
         {
             int squareIndexForCell = GetSquareIndexForRowAndColumn(cell.Row, cell.Column);
@@ -57,6 +69,51 @@ namespace SudokuClassLibrary
             // (row / 3) and (column / 3) are integer division.
             int squareIndexForCell = (row / 3) * 3 + (column / 3);
             return squareIndexForCell;
+        }
+
+        public static bool IsCellInPrimaryDiagonal(Cell cell)
+        {
+            var cellPosition = cell?.Position;
+            if (cellPosition == null)
+            {
+                return false;
+            }
+
+            return (cellPosition.Column == GetPrimaryDiagonalColumnForRow(cellPosition.Row));
+        }
+
+        public static int GetPrimaryDiagonalColumnForRow(int row)
+        {
+            if (row < 0 || row > 8)
+            {
+                return -1;
+            }
+
+            int column = row;
+            return column;
+        }
+
+        public static bool IsCellInSecondaryDiagonal(Cell cell)
+        {
+            var cellPosition = cell?.Position;
+            if (cellPosition == null)
+            {
+                return false;
+            }
+
+            return (cellPosition.Column == GetSecondaryDiagonalColumnForRow(cellPosition.Row));
+        }
+
+        public static int GetSecondaryDiagonalColumnForRow(int row)
+        {
+            int maxValue = 8;
+            if (row < 0 || row > maxValue)
+            {
+                return -1;
+            }
+
+            int column = maxValue - row;
+            return column;
         }
 
         private void RecalculateAvailableValues()

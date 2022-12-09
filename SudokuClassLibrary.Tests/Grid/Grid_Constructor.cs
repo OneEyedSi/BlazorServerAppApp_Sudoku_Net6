@@ -38,7 +38,7 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new();
 
             // Assert
-            grid.Cells.Cast<Sudoku.Cell>().Should().NotContainNulls();
+            grid.GetEnumerableCells().Should().NotContainNulls();
         }
 
         [Fact]
@@ -50,19 +50,72 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new();
 
             // Assert
-            for (int row = 0; row < 9; row++)
+            for (int row = 0; row <= 8; row++)
             {
                 CellGroupType groupType = CellGroupType.Row;
                 int index = row;
 
                 var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                 group.Should().NotBeNull();
+            }
+        }
 
+        [Fact]
+        public void Should_Have_CorrectCells_In_CellGroups_For_Rows()
+        {
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int row = 0; row <= 8; row++)
+            {
+                CellGroupType groupType = CellGroupType.Row;
+                int index = row;
+
+                var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 groupCells.Should().NotBeNullOrEmpty()
                     .And.HaveCount(9)
-                    .And.OnlyContain(c => c.Position.Row == row
-                                        && c.Position.Column >= 0 && c.Position.Column < 9);
+                    .And.OnlyContain(c => c.Row == row
+                                        && c.Column >= 0 && c.Column <= 8);
+            }
+        }
+
+        [Fact]
+        public void Should_Set_Correct_ParentGroup_For_Cells_In_RowGroups()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int i = 0; i<= 8; i++)
+            {
+                var group = grid.GetRowGroup(i);
+
+                var cellsThatShouldBeInGroup =
+                    grid.GetEnumerableCells().Where(c => c.Row == i);
+                foreach (var cell in cellsThatShouldBeInGroup)
+                {
+                    var matchingParentGroups =
+                        cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Row && pg.Index == i);
+                    matchingParentGroups
+                        .Should().NotBeNull()
+                        .And.ContainSingle();
+                    var matchingParentGroup = matchingParentGroups.First();
+                    matchingParentGroup.Should().BeSameAs(group);
+                }
             }
         }
 
@@ -75,19 +128,72 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new();
 
             // Assert
-            for (int column = 0; column < 9; column++)
+            for (int column = 0; column<= 8; column++)
             {
                 CellGroupType groupType = CellGroupType.Column;
                 int index = column;
 
                 var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
                 group.Should().NotBeNull();
+            }
+        }
 
+        [Fact]
+        public void Should_Have_CorrectCells_In_CellGroups_For_Columns()
+        {
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int column = 0; column<= 8; column++)
+            {
+                CellGroupType groupType = CellGroupType.Column;
+                int index = column;
+
+                var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == groupType && cg.Index == index);
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 var groupCells = group.Cells;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 groupCells.Should().NotBeNullOrEmpty()
                     .And.HaveCount(9)
-                    .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9 
-                                        && c.Position.Column == column);
+                    .And.OnlyContain(c => c.Row >= 0 && c.Row <= 8
+                                        && c.Column == column);
+            }
+        }
+
+        [Fact]
+        public void Should_Set_Correct_ParentGroup_For_Cells_In_ColumnGroups()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            for (int i = 0; i <= 8; i++)
+            {
+                var group = grid.GetColumnGroup(i);
+
+                var cellsThatShouldBeInGroup =
+                    grid.GetEnumerableCells().Where(c => c.Column == i);
+                foreach (var cell in cellsThatShouldBeInGroup)
+                {
+                    var matchingParentGroups =
+                        cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Column && pg.Index == i);
+                    matchingParentGroups
+                        .Should().NotBeNull()
+                        .And.ContainSingle();
+                    var matchingParentGroup = matchingParentGroups.First();
+                    matchingParentGroup.Should().BeSameAs(group);
+                }
             }
         }
 
@@ -205,7 +311,7 @@ namespace SudokuClassLibrary.Tests.Grid
         }
 
         [Fact]
-        public void Should_Add_CellGroup_For_PrimaryDiagonal_When_isKillerSudoku_Set()
+        public void Should_Add_Single_CellGroup_For_PrimaryDiagonal_When_isKillerSudoku_Set()
         {
             // Arrange
 
@@ -213,18 +319,12 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new(isKillerSodoku: true);
 
             // Assert
-            var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 0);
-            group.Should().NotBeNull();
-
-            var groupCells = group.Cells;
-            groupCells.Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9
-                                    && c.Position.Column == c.Position.Row);
+            var groups = grid.Groups.Where(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 0);
+            groups.Should().NotBeNull().And.ContainSingle();
         }
 
         [Fact]
-        public void Should_Add_CellGroup_For_SecondaryDiagonal_When_isKillerSudoku_Set()
+        public void Should_Have_CorrectCells_In_CellGroup_For_PrimaryDiagonal_When_isKillerSudoku_Set()
         {
             // Arrange
 
@@ -232,14 +332,117 @@ namespace SudokuClassLibrary.Tests.Grid
             Sudoku.Grid grid = new(isKillerSodoku: true);
 
             // Assert
-            var group = grid.Groups.FirstOrDefault(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 1);
-            group.Should().NotBeNull();
+            grid.ShouldHaveCorrectCellsInDiagonalCellGroup(0);
+        }
 
-            var groupCells = group.Cells;
-            groupCells.Should().NotBeNullOrEmpty()
-                .And.HaveCount(9)
-                .And.OnlyContain(c => c.Position.Row >= 0 && c.Position.Row < 9
-                                    && c.Position.Column == (8 - c.Position.Row));
+        [Fact]
+        public void Should_Set_Correct_ParentGroup_For_Cells_In_PrimaryDiagonalGroup_When_isKillerSudoku_Set()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new(isKillerSodoku: true);
+
+            // Assert
+            int groupIndex = 0;
+            var group = grid.GetDiagonalGroup(groupIndex);
+
+            var cellsThatShouldBeInGroup = grid.GetCellsThatShouldBeInDiagonal(groupIndex);
+            foreach (var cell in cellsThatShouldBeInGroup)
+            {
+                var matchingParentGroups =
+                    cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Diagonal
+                                            && pg.Index == groupIndex);
+                matchingParentGroups
+                    .Should().NotBeNull()
+                    .And.ContainSingle();
+                var matchingParentGroup = matchingParentGroups.First();
+                matchingParentGroup.Should().BeSameAs(group);
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Single_CellGroup_For_SecondaryDiagonal_When_isKillerSudoku_Set()
+        {
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new(isKillerSodoku: true);
+
+            // Assert
+            var groups = grid.Groups.Where(cg => cg.GroupType == CellGroupType.Diagonal && cg.Index == 1);
+            groups.Should().NotBeNull().And.ContainSingle();
+        }
+
+        [Fact]
+        public void Should_Have_CorrectCells_In_CellGroup_For_SecondaryDiagonal_When_isKillerSudoku_Set()
+        {
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new(isKillerSodoku: true);
+
+            // Assert
+            grid.ShouldHaveCorrectCellsInDiagonalCellGroup(1);
+        }
+
+        [Fact]
+        public void Should_Set_Correct_ParentGroup_For_Cells_In_SecondaryDiagonalGroup_When_isKillerSudoku_Set()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+            // Act
+            Sudoku.Grid grid = new(isKillerSodoku: true);
+
+            // Assert
+            int groupIndex = 1;
+            var group = grid.GetDiagonalGroup(groupIndex);
+
+            var cellsThatShouldBeInGroup = grid.GetCellsThatShouldBeInDiagonal(groupIndex);
+            foreach (var cell in cellsThatShouldBeInGroup)
+            {
+                var matchingParentGroups =
+                    cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Diagonal
+                                            && pg.Index == groupIndex);
+                matchingParentGroups
+                    .Should().NotBeNull()
+                    .And.ContainSingle();
+                var matchingParentGroup = matchingParentGroups.First();
+                matchingParentGroup.Should().BeSameAs(group);
+            }
+        }
+
+        [Fact]
+        public void Should_NotSet_Diagonal_ParentGroup_For_Cells_In_Diagonals_ByDefault()
+        {
+            // ASSUMPTION: That another test checks the correct cells are in the group.
+            //  ie that there is are links from the group to the correct cells.
+            // This checks the opposite: The link from each cell back up to the group exists.
+
+            // Arrange
+
+
+            // Act
+            Sudoku.Grid grid = new();
+
+            // Assert
+            var cellsOnDiagonals = grid.GetCellsThatShouldBeInDiagonal(0)
+                                    .Concat(grid.GetCellsThatShouldBeInDiagonal(1));
+
+            foreach (var cell in cellsOnDiagonals)
+            {
+                var matchingParentGroups =
+                    cell.ParentGroups.Where(pg => pg.GroupType == CellGroupType.Diagonal);
+                matchingParentGroups.Should().BeEmpty();
+            }
         }
     }
 }

@@ -68,11 +68,20 @@ namespace SudokuClassLibrary
             }
         }
 
+        /// <summary>
+        /// Converts the 2D array of Cells into an enumerable, making it easy to iterate over.
+        /// </summary>
+        /// <returns>IEnumerable<Cell></returns>
+        public IEnumerable<Cell> GetEnumerableCells()
+        {
+            return this.Cells.Cast<Cell>();
+        }
+
         private void InitializeCells()
         {
-            for (int row = 0; row < 9; row++)
+            for (int row = 0; row <= 8; row++)
             {
-                for (int column = 0; column < 9; column++)
+                for (int column = 0; column <= 8; column++)
                 {
                     Cell cell = new Cell(row, column);
                     this.Cells[row, column] = cell;
@@ -99,11 +108,11 @@ namespace SudokuClassLibrary
 
         private void AddRowGroups()
         {
-            for (int row = 0; row < 9; row++)
+            for (int row = 0; row <= 8; row++)
             {
                 CellGroup group = new CellGroup(CellGroupType.Row, row);
 
-                for (int column = 0; column < 9; column++)
+                for (int column = 0; column <= 8; column++)
                 {
                     Cell cell = GetCell(row, column);
                     group.AddCell(cell);
@@ -115,11 +124,11 @@ namespace SudokuClassLibrary
 
         private void AddColumnGroups()
         {
-            for (int column = 0; column < 9; column++)
+            for (int column = 0; column <= 8; column++)
             {
                 CellGroup group = new CellGroup(CellGroupType.Column, column);
 
-                for (int row = 0; row < 9; row++)
+                for (int row = 0; row <= 8; row++)
                 {
                     Cell cell = GetCell(row, column);
                     group.AddCell(cell);
@@ -132,9 +141,9 @@ namespace SudokuClassLibrary
         private void AddSquareGroups()
         {
             // row and column of top left cell in each square.
-            for (int row = 0; row < 9; row += 3)
+            for (int row = 0; row <= 8; row += 3)
             {
-                for (int column = 0; column < 9; column += 3)
+                for (int column = 0; column <= 8; column += 3)
                 {
                     // Squares will be numbered:
                     //  0,1,2
@@ -157,16 +166,6 @@ namespace SudokuClassLibrary
             }
         }
 
-        private void RemoveDiagonalGroups()
-        {
-            if (this.Groups == null || !this.Groups.Any())
-            {
-                return;
-            }
-
-            this.Groups.RemoveAll(g => g.GroupType == CellGroupType.Diagonal);
-        }
-
         private void AddDiagonalGroups()
         {
             AddPrimaryDiagonalGroup();
@@ -183,9 +182,10 @@ namespace SudokuClassLibrary
 
             CellGroup group = new CellGroup(CellGroupType.Diagonal, groupIndex);
 
-            for (int i = 0; i < 9; i++)
+            for (int row = 0; row <= 8; row++)
             {
-                Cell cell = GetCell(i, i);
+                int column = CellGroup.GetPrimaryDiagonalColumnForRow(row);
+                Cell cell = GetCell(row, column);
                 group.AddCell(cell);
             }
 
@@ -202,15 +202,32 @@ namespace SudokuClassLibrary
 
             CellGroup group = new CellGroup(CellGroupType.Diagonal, groupIndex);
 
-            for (int row = 0; row < 9; row++)
+            for (int row = 0; row <= 8; row++)
             {
-                int column = 8 - row;
-
+                int column = CellGroup.GetSecondaryDiagonalColumnForRow(row);
                 Cell cell = GetCell(row, column);
                 group.AddCell(cell);
             }
 
             this.Groups?.Add(group);
+        }
+
+        private void RemoveDiagonalGroups()
+        {
+            if (this.Groups == null || !this.Groups.Any())
+            {
+                return;
+            }
+
+            foreach (var group in this.Groups.Where(g => g.GroupType == CellGroupType.Diagonal))
+            {
+                foreach (var cell in group.Cells.ToList())
+                {
+                    group.RemoveCell(cell);
+                }
+            }
+
+            this.Groups.RemoveAll(g => g.GroupType == CellGroupType.Diagonal);
         }
     }
 }
