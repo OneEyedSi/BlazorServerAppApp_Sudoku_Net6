@@ -3,13 +3,10 @@
     public enum GameStatus
     {
         Unknown = 0,
-        PreStart,
-        Starting,
-        InitializingCells,
+        Setup,
         Running,
         Paused,
-        Cancelling,
         Cancelled,
-        Finished
+        Completed
     }
 }

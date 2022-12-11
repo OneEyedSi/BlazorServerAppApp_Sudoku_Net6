@@ -11,7 +11,7 @@ namespace SudokuWebApp.Shared.Classes
 
         public TimeSpan ElapsedRunningTime => _timer.Elapsed;
 
-        private GameStatus _status = GameStatus.PreStart;
+        private GameStatus _status = GameStatus.Setup;
         public GameStatus Status
         {
             get
@@ -46,7 +46,7 @@ namespace SudokuWebApp.Shared.Classes
             {
                 switch (previousStatus)
                 {
-                    case GameStatus.Starting:
+                    case GameStatus.Setup:
                         // Sets timer to 0 then starts it.
                         _timer.Restart();
                         break;
