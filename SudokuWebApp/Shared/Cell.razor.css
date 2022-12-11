@@ -1,11 +1,3 @@
-.show {
-    visibility: visible;
-}
-
-.hide {
-    visibility: hidden;
-}
-
 .cellbackground-default {
     background-color: white;
 }

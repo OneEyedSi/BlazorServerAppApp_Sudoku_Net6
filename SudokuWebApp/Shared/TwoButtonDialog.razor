@@ -1,0 +1,86 @@
+﻿<div class="dialog-container">
+    <div class="dialog">
+        <div class="dialog-title-generic">
+            <span>@Title</span>
+        </div>
+        <form class="dialog-body">
+            <div>
+                <span>@Message</span>
+            </div>
+        </form>
+
+        <div class="dialog-buttons-two">
+            <button class="btn btn-secondary" @onclick="OnCancel">@CancelButtonText</button>
+            <button class="btn btn-primary" @onclick="OnOk">@OkButtonText</button>
+        </div>
+    </div>
+</div>
+
+@code 
+{
+    [Parameter] public DialogType Type { get; set; }
+
+    private string? _title;
+    [Parameter] public string? Title
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.AreYouSure:
+                    return "Are you sure?";
+                default:
+                    return _title;
+            }
+        }
+        set
+        {
+            _title = value;            
+        }
+    }
+
+    [Parameter] public string? Message { get; set; }
+
+    private string _cancelButtonText;
+    [Parameter]
+    public string CancelButtonText
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.AreYouSure:
+                    return "No";
+                default:
+                    return _cancelButtonText;
+            }
+        }
+        set
+        {
+            _cancelButtonText = value;
+        }
+    }
+
+    private string _okButtonText;
+    [Parameter]
+    public string OkButtonText
+    {
+        get
+        {
+            switch (Type)
+            {
+                case DialogType.AreYouSure:
+                    return "Yes";
+                default:
+                    return _okButtonText;
+            }
+        }
+        set
+        {
+            _okButtonText = value;
+        }
+    }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnOk { get; set; }
+}

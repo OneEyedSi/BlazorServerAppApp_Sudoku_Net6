@@ -5,6 +5,7 @@
         Generic = 0,
         Error,
         Warning,
-        Info
+        Info,
+        AreYouSure
     }
 }

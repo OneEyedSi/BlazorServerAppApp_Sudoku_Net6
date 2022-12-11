@@ -233,4 +233,10 @@ a, .btn-link {
 .grid {
     border-collapse: collapse;
     border: 1px solid black;
+.show {
+    visibility: visible;
+}
+
+.hide {
+    visibility: hidden;
 }
