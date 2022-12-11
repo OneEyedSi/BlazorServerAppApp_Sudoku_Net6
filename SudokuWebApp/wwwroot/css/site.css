@@ -70,6 +70,37 @@ a, .btn-link {
     padding: 1.5rem !important;
 }
 
+.game-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.game-column {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+.killer-container {
+    font-size: 1.2rem;
+    padding: 0.8rem 0.8rem;
+    margin: 0;
+    background-color: #999;
+    color: white;
+}
+
+    .killer-container label {
+        vertical-align: middle;
+    }
+
+    .killer-container input {
+        vertical-align: middle;
+    }
+
+    .input-large {
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
 .dialog-container {
     position: absolute;
     top: 0;
@@ -222,6 +253,11 @@ a, .btn-link {
         width: 9rem;
     }
 
+.grid {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
 .left {
     float: left;
 }
@@ -230,9 +266,6 @@ a, .btn-link {
     float: right;
 }
 
-.grid {
-    border-collapse: collapse;
-    border: 1px solid black;
 .show {
     visibility: visible;
 }

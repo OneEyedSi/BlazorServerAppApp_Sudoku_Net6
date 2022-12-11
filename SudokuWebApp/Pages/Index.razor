@@ -5,46 +5,99 @@
 <PageTitle>Index</PageTitle>
 
 <div class="main">
-    <h1>Sudoku!</h1>
-
+   
     @if (GameState == null)
     {
         <p>Loading game board ...</p>
     }
     else
-    {        
-        <table>
-            @for (int row = 0; row <= 8; row++)
-            {
-                <tr>
-                    @for (int column = 0; column <= 8; column++)
+    {   
+        <div class="game-container">
+            <div class="game-column">
+                <h1>@GameTitle</h1>
+
+                <table>
+                    @for (int row = 0; row <= 8; row++)
                     {
-                        <td class="grid">
-                            <Cell
-                                GameState="GameState"
-                                CellRow="@row"
-                                CellColumn="@column" />
-                        </td>
+                        <tr>
+                            @for (int column = 0; column <= 8; column++)
+                            {
+                                <td class="grid">
+                                    <Cell
+                                        GameState="GameState"
+                                        CellRow="@row"
+                                        CellColumn="@column" />
+                                </td>
+                            }
+                        </tr>
                     }
-                </tr>
-            }
-        </table>
+                </table>
 
-        if (@ShowSingleButtonDialog)
-        {
-            <SingleButtonDialog
-                Type="DialogType.Warning"
-                Title="This will be included"
-                Message="OMG, nothing happened."
-                OnClose="CloseDialog" />
-        }
+                @if (@TwoButtonDialogIsVisible)
+                {
+                    <TwoButtonDialog
+                    Type="DialogType.AreYouSure"
+                    Title="This will be ignored"
+                    Message="Nothing happened, are you sure you want to press that button?"
+                    OnCancel="CancelButtonPressed"
+                    OnOk="OkButtonPressed" />
+                }
 
-        <div class="page-buttons-single">
-            <button class="btn btn-success" @onclick="ShowDialog">Open dialog</button>
-        </div>
+                @if (GameState.Status == GameStatus.Setup)
+                {
+                    <div class="page-buttons-single">
+                        <button class="btn btn-success" @onclick="ShowDialog">Start game</button>
+                    </div>
+                }
+                @if (GameState.Status != GameStatus.Unknown && GameState.Status != GameStatus.Setup)
+                {
+                    <div class="page-buttons-single">
+                        <button class="btn btn-info" @onclick="ShowDialog">@PauseContinueButtonText</button>
+                        <button class="btn btn-warning" @onclick="ShowDialog">Cancel</button>
+                        <button class="btn btn-danger" @onclick="ShowDialog">New game</button>
+                    </div>
+                }
+            </div>
 
-        <div>
-                <button class="btn btn-success ml-auto" @onclick="ToggleKillerSudoku">Toggle Killer Sudoku</button>
+                <div class="game-column">
+                    <h2>Instructions</h2>
+
+                    <p>Tick the checkbox to make this a <strong>Killer Sudoku</strong> game.</p>
+                    
+                    <div>
+                        <span class="killer-container">
+                            <label>Is Killer Sudoku:</label>
+                                <input type="checkbox" class="input-large" @bind="GameState.IsKillerSudoku" />
+                        </span>
+                    </div>
+                    <p>&nbsp;</p>
+
+                    <p>Click on squares to enter the initial values.</p>
+
+                    <p>When you finish entering the initial values, click the 
+                        <strong>Start Game</strong> button to start the game and timer.</p>
+
+                    <p>The small numbers in each square indicate the possible                         
+                        valid values for that square.</p>
+
+                    <p>During the game click on a square to enter or remove a value.</p>
+
+                    <p>The game will finish and the timer will stop when you set the value of the 
+                        last square in the game grid.</p>
+
+                    <p>At any time during the game you can use the following buttons:</p>
+                    <ul>
+                        <li><strong>Pause</strong> button:  Pauses the timer.  Continue the game again 
+                            via the <strong>Continue</strong> button;</li>
+                        <li><strong>Cancel</strong> button:  Cancels the game but leaves any set 
+                            values in place (so you can see where you went wrong);</li>
+                        <li><strong>New game</strong> button: Cancels the game and clears the game  
+                            grid so you can start again.</li>
+                    </ul>
+
+                    <p>&nbsp;</p>
+                    <p>Dialog button pressed: @TwoButtonDialogButtonPressed</p>
+                </div>
         </div>
     }
 
@@ -52,35 +105,48 @@
 
 @code
 {
-    private bool ShowSingleButtonDialog { get; set; } = false;
+    private string GameTitle => GameState.IsKillerSudoku ? "Killer Sudoku!" : "Sudoku!";
+    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Paused";
+
+    private bool TwoButtonDialogIsVisible { get; set; } = false;
+
+    private string TwoButtonDialogButtonPressed { get; set; } = "[None]";
+
+    protected override void OnInitialized()
+    {
+        if (GameState == null)
+        {
+            return;
+        }
+
+        GameState.Status = GameStatus.Setup;
+    }
 
     private void StartGame()
     {
-        List<GameStatus> statusesToDisplayStartDialog = new()
-        {
-            GameStatus.Unknown,
-            GameStatus.PreStart,
-            GameStatus.Starting, 
-            GameStatus.Cancelled,
-            GameStatus.Finished
-        };
-
-        //ShowStartDialog = statusesToDisplayStartDialog.Contains(GameState.Status);
-        ShowSingleButtonDialog = true;
+        
     }
 
     private void ShowDialog()
     {
-        ShowSingleButtonDialog = true;
+        TwoButtonDialogIsVisible = true; 
+        TwoButtonDialogButtonPressed = "[None]";
     }
 
     private void CloseDialog()
     {
-        ShowSingleButtonDialog = false;
+        TwoButtonDialogIsVisible = false;
     }
 
-    private void ToggleKillerSudoku()
+    private void CancelButtonPressed()
     {
-        GameState.IsKillerSudoku = !GameState.IsKillerSudoku;
+        TwoButtonDialogIsVisible = false;
+        TwoButtonDialogButtonPressed = "[Cancel]";
     }
+
+    private void OkButtonPressed()
+    {
+        TwoButtonDialogIsVisible = false;
+        TwoButtonDialogButtonPressed = "[OK]";
+    } 
 }
