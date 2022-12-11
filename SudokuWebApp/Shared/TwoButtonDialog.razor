@@ -10,8 +10,8 @@
         </form>
 
         <div class="dialog-buttons-two">
-            <button class="btn btn-secondary" @onclick="OnCancel">@CancelButtonText</button>
-            <button class="btn btn-primary" @onclick="OnOk">@OkButtonText</button>
+            <button class="btn btn-secondary" @onclick="CancelClicked">@CancelButtonText</button>
+            <button class="btn btn-primary" @onclick="OkClicked">@OkButtonText</button>
         </div>
     </div>
 </div>
@@ -81,6 +81,15 @@
         }
     }
 
-    [Parameter] public EventCallback OnCancel { get; set; }
-    [Parameter] public EventCallback OnOk { get; set; }
+    private async Task CancelClicked()
+    {
+        await OnResult.InvokeAsync(DialogResult.Cancel);
+    }
+
+    private async Task OkClicked()
+    {
+        await OnResult.InvokeAsync(DialogResult.Ok);
+    }
+
+    [Parameter] public EventCallback<DialogResult> OnResult { get; set; }
 }

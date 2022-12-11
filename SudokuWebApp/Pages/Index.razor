@@ -39,8 +39,7 @@
                     Type="DialogType.AreYouSure"
                     Title="This will be ignored"
                     Message="Nothing happened, are you sure you want to press that button?"
-                    OnCancel="CancelButtonPressed"
-                    OnOk="OkButtonPressed" />
+                    OnResult="HandleDialogResult" />
                 }
 
                 @if (GameState.Status == GameStatus.Setup)
@@ -124,7 +123,7 @@
 
     private void StartGame()
     {
-        
+
     }
 
     private void ShowDialog()
@@ -133,20 +132,22 @@
         TwoButtonDialogButtonPressed = "[None]";
     }
 
-    private void CloseDialog()
+    private void HandleDialogResult(DialogResult result)
     {
         TwoButtonDialogIsVisible = false;
-    }
 
-    private void CancelButtonPressed()
-    {
-        TwoButtonDialogIsVisible = false;
-        TwoButtonDialogButtonPressed = "[Cancel]";
+        switch (result)
+        {
+            case DialogResult.Cancel:
+                TwoButtonDialogButtonPressed = "[Cancel]";
+                break;
+            case DialogResult.Ok:
+                TwoButtonDialogButtonPressed = "[OK]";
+                break;
+            default:
+                TwoButtonDialogButtonPressed = "[Unknown]";
+                break;
+        }
+        
     }
-
-    private void OkButtonPressed()
-    {
-        TwoButtonDialogIsVisible = false;
-        TwoButtonDialogButtonPressed = "[OK]";
-    } 
 }
