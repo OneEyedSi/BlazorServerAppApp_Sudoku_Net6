@@ -56,8 +56,8 @@
                                 @onclick="TogglePauseGame">@PauseContinueButtonText</button>
                                 <button class="btn btn-warning"  
                                 disabled=@IsCancelledDisabled
-                                @onclick="@(async () => await CancelGameAsync())">Cancel</button>
-                        <button class="btn btn-danger" @onclick="@(async () => await NewGameAsync())">New game</button>
+                                @onclick="@CancelGameAsync">Cancel</button>
+                        <button class="btn btn-danger" @onclick="@NewGameAsync">New game</button>
                     </div>
                 }
             </div>
