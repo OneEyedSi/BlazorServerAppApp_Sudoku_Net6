@@ -3,25 +3,26 @@
 <div class="cell-container @CellBackgroundClass">
   <table class="possiblevalues-table">
       <tr>
-          <td class="hide">1</td>
-          <td>2</td>
-          <td>3</td>
+          <td class=@GetPossibleValueClass(1)>1</td>
+          <td class=@GetPossibleValueClass(2)>2</td>
+          <td class=@GetPossibleValueClass(3)>3</td>
       </tr>
       <tr>
-          <td class="show">4</td>
-          <td class="hide">5</td>
-          <td>6</td>
+          <td class=@GetPossibleValueClass(4)>4</td>
+          <td class=@GetPossibleValueClass(5)>5</td>
+          <td class=@GetPossibleValueClass(6)>6</td>
       </tr>
       <tr>
-          <td>7</td>
-          <td>8</td>
-          <td>9</td>
+          <td class=@GetPossibleValueClass(7)>7</td>
+          <td class=@GetPossibleValueClass(8)>8</td>
+          <td class=@GetPossibleValueClass(9)>9</td>
       </tr>
   </table>
 
-  <span class="cell-value show">5</span>
+  <span class="@ValueClass show" @onclick=@ShowInputBox>@CellValue</span>
+
   <form>
-    <input class="cell-newvalue hide" type="text" id="newvalue" name="newvalue" />
+    <input class=@InputBoxClass type="text" id="newvalue" name="newvalue" @bind="CellValue" />
   </form>
 </div>
 
@@ -81,5 +82,65 @@
 
             return "cellbackground-oddsquare";
         }
+    }
+
+    private bool InputBoxIsVisible { get; set; } = false;
+
+    private string InputBoxClass => InputBoxIsVisible ? "cell-newvalue show" : "cell-newvalue hide";
+
+    private string ValueClass => CellState?.IsInitialValue ?? true ? "cell-value-intital" : "cell-value-userinput";
+
+    private int? CellValue
+    {
+        get
+        {
+            return CellState?.Value;
+        }
+        set
+        {
+            if (CellState == null)
+            {
+                return;
+            }
+
+            if ((GameState?.Status ?? GameStatus.Unknown) == GameStatus.Setup)
+            {
+                CellState.SetInitialValue(value);
+            }
+            else
+            {
+                CellState.Value = value;
+            }
+        }
+    }
+
+    private string GetPossibleValueClass(int possibleValue)
+    {
+        string showClass = "show";
+        string hideClass = "hide";
+
+        if (CellState == null)
+        {
+            return showClass;
+        }
+
+        if (CellState.HasValueSet)
+        {
+            return hideClass;
+        }
+
+        bool isPossible = CellState?.GetPossibleValuesDictionary()?[possibleValue] ?? true;
+        string pvClass = isPossible? showClass : hideClass;
+        return pvClass;
+    }
+
+    private void ShowInputBox()
+    {
+        InputBoxIsVisible = true;
+    }
+
+    private void HideInputBox()
+    {
+        InputBoxIsVisible = false;
     }
 }
