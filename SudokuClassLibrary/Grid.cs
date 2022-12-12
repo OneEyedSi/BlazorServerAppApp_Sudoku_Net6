@@ -54,6 +54,9 @@ namespace SudokuClassLibrary
             { 
                 foreach (var cell in this.Cells)
                 {
+                    // Can't set or clear a cell set to an initial value.
+                    // So ensure IsInitialValue is turned off before clearing the value.
+                    cell.IsInitialValue = false;
                     cell.Value = null;
                 }
 
