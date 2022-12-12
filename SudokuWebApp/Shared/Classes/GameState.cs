@@ -1,5 +1,6 @@
 ﻿using SudokuClassLibrary;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace SudokuWebApp.Shared.Classes
 {
@@ -20,12 +21,14 @@ namespace SudokuWebApp.Shared.Classes
             }
             set
             {
-                var previousStatus = _status;
+                PreviousStatus = _status;
                 _status = value;
 
-                SwitchTimer(previousStatus, _status);
+                SwitchTimer(PreviousStatus, _status);
             }
         }
+
+        public GameStatus PreviousStatus { get; private set; }
 
         public bool IsKillerSudoku
         {

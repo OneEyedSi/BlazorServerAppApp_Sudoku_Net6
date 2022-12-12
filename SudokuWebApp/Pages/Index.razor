@@ -33,27 +33,31 @@
                     }
                 </table>
 
-                @if (@TwoButtonDialogIsVisible)
+                @if (TwoButtonDialogIsVisible)
                 {
                     <TwoButtonDialog
                     Type="DialogType.AreYouSure"
                     Title="This will be ignored"
-                    Message="Nothing happened, are you sure you want to press that button?"
+                    Message=@DialogMessage
                     OnResult="HandleDialogResult" />
                 }
 
                 @if (GameState.Status == GameStatus.Setup)
                 {
                     <div class="page-buttons-single">
-                        <button class="btn btn-success" @onclick="ShowDialog">Start game</button>
+                                <button class="btn btn-success" @onclick="StartGame">Start game</button>
                     </div>
                 }
                 @if (GameState.Status != GameStatus.Unknown && GameState.Status != GameStatus.Setup)
                 {
-                    <div class="page-buttons-single">
-                        <button class="btn btn-info" @onclick="ShowDialog">@PauseContinueButtonText</button>
-                        <button class="btn btn-warning" @onclick="ShowDialog">Cancel</button>
-                        <button class="btn btn-danger" @onclick="ShowDialog">New game</button>
+                    <div class="page-buttons-multiple">
+                        <button class="@PauseContinueButtonClass pause-continue-button" 
+                                disabled=@IsPauseContinueDisabled
+                                @onclick="TogglePauseGame">@PauseContinueButtonText</button>
+                                <button class="btn btn-warning"  
+                                disabled=@IsCancelledDisabled
+                                @onclick="@(async () => await CancelGameAsync())">Cancel</button>
+                        <button class="btn btn-danger" @onclick="@(async () => await NewGameAsync())">New game</button>
                     </div>
                 }
             </div>
@@ -66,7 +70,7 @@
                     <div>
                         <span class="killer-container">
                             <label>Is Killer Sudoku:</label>
-                                <input type="checkbox" class="input-large" @bind="GameState.IsKillerSudoku" />
+                                    <input type="checkbox" class="input-large" disabled=@IsKillerSudokuDisabled @bind="GameState.IsKillerSudoku" />
                         </span>
                     </div>
                     <p>&nbsp;</p>
@@ -92,10 +96,13 @@
                             values in place (so you can see where you went wrong);</li>
                         <li><strong>New game</strong> button: Cancels the game and clears the game  
                             grid so you can start again.</li>
-                    </ul>
+                        </ul>
 
                     <p>&nbsp;</p>
-                    <p>Dialog button pressed: @TwoButtonDialogButtonPressed</p>
+                        <p>Current game state: @GameState.Status</p>
+
+                    <p>&nbsp;</p>
+                    <p>Dialog button pressed: @DialogResult</p>
                 </div>
         </div>
     }
@@ -105,11 +112,21 @@
 @code
 {
     private string GameTitle => GameState.IsKillerSudoku ? "Killer Sudoku!" : "Sudoku!";
-    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Paused";
+
+    private bool IsKillerSudokuDisabled => !(GameState.Status == GameStatus.Setup);
+
+    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Pause";
+    private string PauseContinueButtonClass => GameState.Status == GameStatus.Paused ? "btn btn-primary" : "btn btn-info";
+    private bool IsPauseContinueDisabled => (GameState.Status == GameStatus.Cancelled 
+                                            || GameState.Status == GameStatus.Completed);
+    private bool IsCancelledDisabled => (GameState.Status == GameStatus.Cancelled
+                                            || GameState.Status == GameStatus.Completed);
 
     private bool TwoButtonDialogIsVisible { get; set; } = false;
 
-    private string TwoButtonDialogButtonPressed { get; set; } = "[None]";
+    private string DialogMessage { get; set; } = "Are you sure?";
+
+    private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
 
     protected override void OnInitialized()
     {
@@ -123,31 +140,78 @@
 
     private void StartGame()
     {
+        GameState.Status = GameStatus.Running;
+    }
 
+    private void TogglePauseGame()
+    {
+        if (GameState.Status == GameStatus.Running)
+        {
+            PauseGame();
+        }
+        else if (GameState.Status == GameStatus.Paused)
+        {
+            ContinueGame();
+        }
+    }
+
+    private void PauseGame()
+    {
+        GameState.Status = GameStatus.Paused;
+    }
+
+    private void ContinueGame()
+    {
+        GameState.Status = GameStatus.Running;
+    }
+
+    private async Task CancelGameAsync()
+    {
+        DialogMessage = "Are you sure you want to cancel the game?";
+        DialogResult result = await GetDialogResultAsync();
+
+        if (result == DialogResult.Ok)
+        {
+            GameState.Status = GameStatus.Cancelled;
+        }
+        
+        // If dialog cancelled leave the game state as it is.
+    }
+
+    private async Task NewGameAsync()
+    {
+        DialogMessage = "Are you sure you want to cancel this game and start a new one?";
+        DialogResult result = await GetDialogResultAsync();
+
+        if (result == DialogResult.Ok)
+        {
+            GameState.IsKillerSudoku = false;
+            GameState.GameGrid.ResetGame();
+            GameState.Status = GameStatus.Setup;
+        }
+
+        // If dialog cancelled leave the game state as it is.
+    }
+
+    private async Task<DialogResult> GetDialogResultAsync()
+    {
+        DialogResult result = DialogResult.Unknown;
+        ShowDialog();
+        await Utilities.WaitUntil(() => DialogResult != DialogResult.Unknown);
+        result = DialogResult;
+        return result;
     }
 
     private void ShowDialog()
     {
-        TwoButtonDialogIsVisible = true; 
-        TwoButtonDialogButtonPressed = "[None]";
+        TwoButtonDialogIsVisible = true;
+        DialogResult = DialogResult.Unknown;
     }
 
     private void HandleDialogResult(DialogResult result)
     {
         TwoButtonDialogIsVisible = false;
 
-        switch (result)
-        {
-            case DialogResult.Cancel:
-                TwoButtonDialogButtonPressed = "[Cancel]";
-                break;
-            case DialogResult.Ok:
-                TwoButtonDialogButtonPressed = "[OK]";
-                break;
-            default:
-                TwoButtonDialogButtonPressed = "[Unknown]";
-                break;
-        }
-        
+        DialogResult = result;        
     }
 }
