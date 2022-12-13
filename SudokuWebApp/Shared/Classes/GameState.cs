@@ -6,6 +6,8 @@ namespace SudokuWebApp.Shared.Classes
 {
     public class GameState
     {
+        public event Action? RefreshRequested;
+
         private Stopwatch _timer = new Stopwatch();
 
         public Grid GameGrid { get; } = new();
@@ -41,6 +43,11 @@ namespace SudokuWebApp.Shared.Classes
             {
                 GameGrid.IsKillerSudoku = value;
             }
+        }
+
+        public void RequestRefresh()
+        {
+            RefreshRequested?.Invoke();
         }
 
         private void SwitchTimer(GameStatus previousStatus, GameStatus newStatus)

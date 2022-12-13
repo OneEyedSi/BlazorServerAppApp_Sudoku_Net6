@@ -128,6 +128,11 @@
 
     private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
 
+    protected override void OnInitialized()
+    {
+        GameState.RefreshRequested += RefreshMe;
+    }
+
     protected override async Task OnAfterRenderAsync (bool firstRender)
     {
         if (firstRender)
@@ -136,6 +141,11 @@
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        GameState.RefreshRequested -= RefreshMe;
     }
 
     private void StartGame()
@@ -225,5 +235,10 @@
         TwoButtonDialogIsVisible = false;
 
         DialogResult = result;        
-    }    
+    }
+
+    private async void RefreshMe()
+    {
+        await InvokeAsync(() => StateHasChanged());
+    }
 }
