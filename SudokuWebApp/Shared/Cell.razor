@@ -22,7 +22,8 @@
   <span class="@ValueClass show" @onclick=@ShowInputBox>@CellValue</span>
 
   <form>
-    <input class=@InputBoxClass type="text" id="newvalue" name="newvalue" @bind="CellValue" />
+    <input type="text" id="newvalue" name="newvalue" 
+        class=@InputBoxClass @ref=InputBox @bind="CellValue" @onblur=@HideInputBox />
   </form>
 </div>
 
@@ -84,6 +85,8 @@
         }
     }
 
+    private ElementReference InputBox;
+
     private bool InputBoxIsVisible { get; set; } = false;
 
     private string InputBoxClass => InputBoxIsVisible ? "cell-newvalue show" : "cell-newvalue hide";
@@ -114,6 +117,19 @@
         }
     }
 
+    private List<Func<Task>> _asyncActionsToRunAfterRender = new List<Func<Task>>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender)
+        {
+            await asyncActionToRun();
+        }
+        _asyncActionsToRunAfterRender.Clear();
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     private string GetPossibleValueClass(int possibleValue)
     {
         string showClass = "show";
@@ -137,6 +153,7 @@
     private void ShowInputBox()
     {
         InputBoxIsVisible = true;
+        _asyncActionsToRunAfterRender.Add(() => InputBox.FocusAsync().AsTask());
     }
 
     private void HideInputBox()
