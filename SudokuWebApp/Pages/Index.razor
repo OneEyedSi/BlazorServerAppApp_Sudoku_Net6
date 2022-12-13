@@ -2,7 +2,7 @@
 @using SudokuClassLibrary
 @inject GameState GameState
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Sudoku Game</PageTitle>
 
 <div class="main">
    
@@ -70,7 +70,7 @@
                     <div>
                         <span class="killer-container">
                             <label>Is Killer Sudoku:</label>
-                                    <input type="checkbox" class="input-large" disabled=@IsKillerSudokuDisabled @bind="GameState.IsKillerSudoku" />
+                            <input type="checkbox" class="checkbox-large" disabled=@IsKillerSudokuDisabled @bind="GameState.IsKillerSudoku" />
                         </span>
                     </div>
                     <p>&nbsp;</p>
@@ -128,14 +128,14 @@
 
     private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync (bool firstRender)
     {
-        if (GameState == null)
+        if (firstRender)
         {
-            return;
+            GameState.Status = GameStatus.Setup;
         }
 
-        GameState.Status = GameStatus.Setup;
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void StartGame()
@@ -225,5 +225,5 @@
         TwoButtonDialogIsVisible = false;
 
         DialogResult = result;        
-    }
+    }    
 }
