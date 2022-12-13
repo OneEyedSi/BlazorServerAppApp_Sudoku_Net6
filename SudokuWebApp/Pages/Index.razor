@@ -52,7 +52,8 @@
 
                 @if (GameState.Status == GameStatus.Setup)
                 {
-                    <div class="page-buttons-single">
+                    <div class="page-buttons-multiple">
+                        <button class="btn btn-danger" @onclick="@ClearGame">Clear game grid</button>
                         <button class="btn btn-success" @onclick="StartGame">Start game</button>
                     </div>
                 }
@@ -159,6 +160,13 @@
         GameState.RefreshRequested -= RefreshMe;
     }
 
+    private void ClearGame()
+    {
+        GameState.IsKillerSudoku = false;
+        GameState.GameGrid.ResetGame();
+        GameState.Status = GameStatus.Setup;
+    }
+
     private void StartGame()
     {
         GameState.Status = GameStatus.Running;
@@ -200,12 +208,7 @@
     private async Task NewGameAsync()
     {
         string dialogMessage = "Are you sure you want to cancel this game and start a new one?";
-        Action actionOnConfirmation = () =>
-        {
-            GameState.IsKillerSudoku = false;
-            GameState.GameGrid.ResetGame();
-            GameState.Status = GameStatus.Setup;
-        };
+        Action actionOnConfirmation = () => ClearGame();
 
         await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
     }
