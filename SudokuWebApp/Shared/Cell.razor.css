@@ -14,6 +14,10 @@
     background-color: aqua;
 }
 
+.cellbackground-single-possiblevalue {
+    background-color: lemonchiffon;
+}
+
 .cell-container {
     position: relative;
     width: 5rem;

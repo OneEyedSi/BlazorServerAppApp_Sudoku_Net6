@@ -53,7 +53,7 @@
                 @if (GameState.Status == GameStatus.Setup)
                 {
                     <div class="page-buttons-single">
-                                <button class="btn btn-success" @onclick="StartGame">Start game</button>
+                        <button class="btn btn-success" @onclick="StartGame">Start game</button>
                     </div>
                 }
                 @if (GameState.Status != GameStatus.Unknown && GameState.Status != GameStatus.Setup)
@@ -89,7 +89,9 @@
                         <strong>Start Game</strong> button to start the game and timer.</p>
 
                     <p>The small numbers in each square indicate the possible                         
-                        valid values for that square.</p>
+                            valid values for that square.</p>
+
+                    <p>If a square has only one possible valid value it will be highlighted in pale yellow.</p>
 
                     <p>During the game click on a square to enter or remove a value.</p>
 

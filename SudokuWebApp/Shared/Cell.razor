@@ -64,6 +64,11 @@
     {
         get
         {
+            if ((CellState?.HasSinglePossibleValue ?? false) && !CellState.HasValueSet)
+            {
+                return "cellbackground-single-possiblevalue";
+            }
+
             int parentSquareIndex = CellState?.GetParentSquareIndex() ?? -1;
 
             if (parentSquareIndex == -1)
