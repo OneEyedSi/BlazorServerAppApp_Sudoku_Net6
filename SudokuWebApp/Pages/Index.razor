@@ -26,7 +26,8 @@
                                     <Cell
                                         GameState="GameState"
                                         CellRow="@row"
-                                        CellColumn="@column" />
+                                        CellColumn="@column"
+                                        OnValueError=@ShowError />
                                 </td>
                             }
                         </tr>
@@ -37,9 +38,16 @@
                 {
                     <TwoButtonDialog
                     Type="DialogType.AreYouSure"
-                    Title="This will be ignored"
                     Message=@DialogMessage
                     OnResult="HandleDialogResult" />
+                }
+
+                @if (ErrorDialogIsVisible)
+                {
+                    <SingleButtonDialog
+                        Type="DialogType.Error"
+                        Message=@ErrorMessage
+                        OnClose="CloseError" />
                 }
 
                 @if (GameState.Status == GameStatus.Setup)
@@ -123,10 +131,11 @@
                                             || GameState.Status == GameStatus.Completed);
 
     private bool TwoButtonDialogIsVisible { get; set; } = false;
-
     private string DialogMessage { get; set; } = "Are you sure?";
-
     private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
+
+    private bool ErrorDialogIsVisible { get; set; } = false;
+    private string ErrorMessage { get; set; } = "An error occurred.";
 
     protected override void OnInitialized()
     {
@@ -234,7 +243,19 @@
     {
         TwoButtonDialogIsVisible = false;
 
-        DialogResult = result;        
+        DialogResult = result;
+    }
+
+    private void ShowError(string errorMessage)
+    {
+        ErrorMessage = errorMessage;
+        ErrorDialogIsVisible = true;
+    }
+
+    private void CloseError()
+    {
+        ErrorDialogIsVisible = false;
+        ErrorMessage = "An error occurred.";
     }
 
     private async void RefreshMe()

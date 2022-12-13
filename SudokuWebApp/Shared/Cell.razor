@@ -37,6 +37,9 @@
     [Parameter()]
     public int CellColumn { get; set; } = 0;
 
+    [Parameter] 
+    public EventCallback<string> OnValueError { get; set; }
+
     private Library.Cell? _cellState;
     private Library.Cell? CellState
     {
@@ -103,6 +106,12 @@
         {
             if (CellState == null)
             {
+                return;
+            }
+
+            if (!CellState.IsValidValue(value, out string? errorMessage))
+            {
+                OnValueError.InvokeAsync(errorMessage);
                 return;
             }
 

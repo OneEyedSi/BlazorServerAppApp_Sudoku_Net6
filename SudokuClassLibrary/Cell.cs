@@ -64,7 +64,7 @@ namespace SudokuClassLibrary
                     return;
                 }
 
-                CheckNewValue(value, this.GetCallerName());
+                IsValidValue(value);
                 int? previousValue = _value;
                 _value = value;
                 ResetPossibleValues();
@@ -175,13 +175,45 @@ namespace SudokuClassLibrary
             return ParentGroups?.Any(pg => pg.GroupType == CellGroupType.Diagonal) ?? false;
         }
 
-        private static void CheckNewValue(int? newValue, string propertyName)
+        private void IsValidValue(int? newValue)
         {
-            if (newValue.HasValue && (newValue.Value < 1 || newValue.Value > 9))
+            if (!IsValidValue(newValue, out string? errorMessage))
             {
-                throw new ArgumentException(
-                    $"Invalid value: Value must be between 1 and 9.  Attempted to set it to {newValue.Value}");
+                throw new ArgumentException(errorMessage);
             }
+        }
+
+        public bool IsValidValue(int? newValue, out string? errorMessage)
+        {
+            errorMessage = null;
+            if (!newValue.HasValue)
+            {
+                return true;
+            }
+
+            if (newValue.Value < 1 || newValue.Value > 9)
+            {
+                errorMessage = "Invalid value: Value must be between 1 and 9.";
+                return false;
+            }
+
+            var validValues = GetPossibleValuesList();
+            if (validValues.Contains(newValue.Value))
+            {
+                return true;
+            }
+
+            foreach(var parentGroup in ParentGroups)
+            {
+                if (!parentGroup.GetAvailableValues().Contains(newValue.Value))
+                {
+                    errorMessage = $"Invalid value: Value already set in the current {parentGroup.GroupType.ToString().ToLower()}.";
+                    return false;
+                }
+            }
+
+            errorMessage = "Invalid value: Unknown error.";
+            return false;
         }
 
         private void ResetPossibleValues()
