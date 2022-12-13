@@ -1,0 +1,56 @@
+﻿@page "/test"
+
+<PageTitle>Test</PageTitle>
+
+<h3>Test</h3>
+
+<div>
+    <button class="btn btn-success" @onclick="JumpToInputBox">Jump to Inputbox</button>
+    <button class="btn btn-primary" @onclick="@HideInputBox">Hide Inputbox</button>
+</div>
+
+<p>&nbsp;</p>
+
+<form>
+    <input type="text" id="newvalue" name="newvalue" 
+    class=@InputBoxClass @ref=InputBox @bind="InputValue" />
+</form>
+
+<p>&nbsp;</p>
+
+<p>Input: @InputValue</p>
+
+@code {
+
+    private List<Func<Task>> _asyncActionsToRunAfterRender = new List<Func<Task>>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender)
+        {
+            await asyncActionToRun();
+        }
+        _asyncActionsToRunAfterRender.Clear();
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private string? InputValue { get; set; }
+    private ElementReference InputBox;
+
+    private bool InputBoxIsVisible { get; set; } = false;
+
+    private string InputBoxClass => InputBoxIsVisible ? "textbox-large show" : "textbox-large hide";
+
+    private void JumpToInputBox()
+    {
+        InputBoxIsVisible = true;
+        _asyncActionsToRunAfterRender.Add(() => InputBox.FocusAsync().AsTask());
+    }
+
+    private void HideInputBox()
+    {
+        InputValue = null;
+        InputBoxIsVisible = false;
+    }
+}

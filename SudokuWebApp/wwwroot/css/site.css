@@ -96,10 +96,15 @@ a, .btn-link {
         vertical-align: middle;
     }
 
-    .input-large {
-        width: 1.1rem;
-        height: 1.1rem;
-    }
+.checkbox-large {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.textbox-large {
+    width: 20rem;
+    height: 2rem;
+}
 
 .dialog-container {
     position: absolute;
@@ -131,7 +136,7 @@ a, .btn-link {
     z-index: 2000;
     align-self: center;
     margin: auto;
-    width: 700px;
+    width: 400px;
     max-height: calc(100% - 3rem);
     animation: dialog-entry 0.4s;
     animation-timing-function: cubic-bezier(0.075, 0.820, 0.165, 1.000);
