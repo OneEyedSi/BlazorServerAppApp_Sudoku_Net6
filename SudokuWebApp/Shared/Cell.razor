@@ -114,6 +114,13 @@
                 return;
             }
 
+            // Initial values are read-only during game.
+            if ((GameState?.Status ?? GameStatus.Unknown) != GameStatus.Setup
+                && CellState.IsInitialValue)
+            {
+                return;
+            }
+
             if (!CellState.IsValidValue(value, out string? errorMessage))
             {
                 OnValueError.InvokeAsync(errorMessage);
@@ -127,7 +134,7 @@
                 CellState.SetInitialValue(value);
             }
             else
-            {
+            {                
                 CellState.Value = value;
             }
 
@@ -142,7 +149,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender)
+        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender.ToList())
         {
             await asyncActionToRun();
         }
@@ -173,6 +180,18 @@
 
     private void ShowInputBox()
     {
+        if (CellState == null)
+        {
+            return;
+        }
+
+        // Initial values are read-only during game.
+        if ((GameState?.Status ?? GameStatus.Unknown) != GameStatus.Setup
+            && CellState.IsInitialValue)
+        {
+            return;
+        }
+
         InputBoxIsVisible = true;
         _asyncActionsToRunAfterRender.Add(() => InputBox.FocusAsync().AsTask());
     }
