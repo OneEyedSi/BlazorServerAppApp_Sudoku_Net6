@@ -167,39 +167,51 @@
 
     private async Task CancelGameAsync()
     {
-        DialogMessage = "Are you sure you want to cancel the game?";
-        DialogResult result = await GetDialogResultAsync();
-
-        if (result == DialogResult.Ok)
+        string dialogMessage = "Are you sure you want to cancel the game?";
+        Action actionOnConfirmation = () =>
         {
             GameState.Status = GameStatus.Cancelled;
-        }
-        
-        // If dialog cancelled leave the game state as it is.
+        };
+
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
     }
 
     private async Task NewGameAsync()
     {
-        DialogMessage = "Are you sure you want to cancel this game and start a new one?";
-        DialogResult result = await GetDialogResultAsync();
-
-        if (result == DialogResult.Ok)
+        string dialogMessage = "Are you sure you want to cancel this game and start a new one?";
+        Action actionOnConfirmation = () =>
         {
             GameState.IsKillerSudoku = false;
             GameState.GameGrid.ResetGame();
             GameState.Status = GameStatus.Setup;
-        }
+        };
 
-        // If dialog cancelled leave the game state as it is.
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
     }
 
-    private async Task<DialogResult> GetDialogResultAsync()
+    private async Task ActWithConfirmationAsync(string dialogMessage, Action actionOnConfirmation)
     {
+        // Want to pause the game while the dialog is open.  If the user chooses to cancel the 
+        // action then want to resume the previous status.
+        var previousStatus = GameState.Status;
+        GameState.Status = GameStatus.Paused;
+
+        DialogMessage = dialogMessage;
         DialogResult result = DialogResult.Unknown;
+
         ShowDialog();
         await Utilities.WaitUntil(() => DialogResult != DialogResult.Unknown);
         result = DialogResult;
-        return result;
+
+        if (result == DialogResult.Ok)
+        {
+            actionOnConfirmation();
+        }
+        else
+        {
+            // If dialog cancelled return to the previous game state.
+            GameState.Status = previousStatus;
+        }
     }
 
     private void ShowDialog()
