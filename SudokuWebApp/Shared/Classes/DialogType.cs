@@ -6,6 +6,7 @@
         Error,
         Warning,
         Info,
-        AreYouSure
+        AreYouSure,
+        Congratulations
     }
 }

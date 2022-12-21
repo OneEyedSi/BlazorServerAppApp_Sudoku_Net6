@@ -185,6 +185,11 @@ a, .btn-link {
     color: white;
 }
 
+.dialog-title-congratulations {
+    background-color: gold;
+    color: black;
+}
+
 .dialog-body {
     flex-grow: 1;
     padding: 0.5rem 3rem 1rem 0;

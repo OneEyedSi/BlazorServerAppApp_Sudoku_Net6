@@ -50,25 +50,41 @@
                         OnClose="CloseError" />
                 }
 
-                @if (GameState.Status == GameStatus.Setup)
+                @if (CongratulationsDialogIsVisible)
+                {
+                    <SingleButtonDialog
+                        Type="DialogType.Congratulations"
+                        Message="You've completed the game!"
+                        OnClose="CloseCongratulations" />
+                }
+
+                @if (IsButtonGroupVisible(ButtonGroup.Setup))
                 {
                     <div class="page-buttons-multiple">
-                        <button class="btn btn-danger" @onclick="@ClearGame">Clear game grid</button>
-                        <button class="btn btn-success" @onclick="StartGame">Start game</button>
+                        <button class="btn btn-danger" 
+                            disabled=@IsButtonDisabled(Button.ClearGrid)
+                            @onclick="@ClearGridAsync">Clear game grid</button>
+                        <button class="btn btn-success" 
+                            disabled=@IsButtonDisabled(Button.StartGame)
+                            @onclick="StartGame">Start game</button>
                     </div>
                 }
-                @if (GameState.Status != GameStatus.Unknown && GameState.Status != GameStatus.Setup)
+                @if (IsButtonGroupVisible(ButtonGroup.Game))
                 {
                     <div class="page-buttons-multiple">
                         <button class="@PauseContinueButtonClass pause-continue-button" 
-                                disabled=@IsPauseContinueDisabled
+                                disabled=@IsButtonDisabled(Button.PauseContinue)
                                 @onclick="TogglePauseGame">@PauseContinueButtonText</button>
-                                <button class="btn btn-warning"  
-                                disabled=@IsCancelledDisabled
-                                @onclick="@CancelGameAsync">Cancel</button>
+                        <button class="btn btn-warning"  
+                                disabled=@IsButtonDisabled(Button.RestartGame)
+                                @onclick="@RestartGameAsync">Restart game</button>
                         <button class="btn btn-danger" @onclick="@NewGameAsync">New game</button>
                     </div>
                 }
+                <div class="page-buttons-multiple">
+                    <button class="btn btn-secondary" @onclick="@ClearGame">&lt; Undo</button>
+                    <button class="btn btn-secondary" @onclick="StartGame">Redo &gt;</button>
+                </div>
             </div>
 
                 <div class="game-column">
@@ -122,23 +138,7 @@
 
 @code
 {
-    private string GameTitle => GameState.IsKillerSudoku ? "Killer Sudoku!" : "Sudoku!";
-
-    private bool IsKillerSudokuDisabled => !(GameState.Status == GameStatus.Setup);
-
-    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Pause";
-    private string PauseContinueButtonClass => GameState.Status == GameStatus.Paused ? "btn btn-primary" : "btn btn-info";
-    private bool IsPauseContinueDisabled => (GameState.Status == GameStatus.Cancelled 
-                                            || GameState.Status == GameStatus.Completed);
-    private bool IsCancelledDisabled => (GameState.Status == GameStatus.Cancelled
-                                            || GameState.Status == GameStatus.Completed);
-
-    private bool TwoButtonDialogIsVisible { get; set; } = false;
-    private string DialogMessage { get; set; } = "Are you sure?";
-    private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
-
-    private bool ErrorDialogIsVisible { get; set; } = false;
-    private string ErrorMessage { get; set; } = "An error occurred.";
+    #region Lifecycle Events **********************************************************************
 
     protected override void OnInitialized()
     {
@@ -149,7 +149,7 @@
     {
         if (firstRender)
         {
-            GameState.Status = GameStatus.Setup;
+            GameState.Status = GameStatus.Initial;
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -160,21 +160,86 @@
         GameState.RefreshRequested -= RefreshMe;
     }
 
+    private async void RefreshMe()
+    {
+        await InvokeAsync(() => StateHasChanged());
+
+        if (GameState.GameIsComplete)
+        {
+            ShowCongratulations();
+        }
+    }
+
+    #endregion
+
+    #region Miscellaneous setup *******************************************************************
+
+    private string GameTitle => GameState.IsKillerSudoku ? "Killer Sudoku!" : "Sudoku!";
+    private bool IsKillerSudokuDisabled => (GameState.Status != GameStatus.Initial 
+                                        && GameState.Status != GameStatus.Setup);
+
+    #endregion
+
+    #region Button setup **************************************************************************
+
+    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Pause";
+    private string PauseContinueButtonClass => GameState.Status == GameStatus.Paused ? "btn btn-primary" : "btn btn-info";
+
+    private bool IsButtonDisabled(Button button)
+    {
+        switch (GameState.Status)
+        {
+            case GameStatus.Initial:
+                return (button != Button.ClearGrid);
+            case GameStatus.Setup:
+                return (button != Button.ClearGrid && button != Button.StartGame);
+            case GameStatus.GameStart:
+                return (button != Button.PauseContinue && button != Button.NewGame);
+            case GameStatus.Running:
+            case GameStatus.Paused:
+                return (button != Button.PauseContinue && button != Button.RestartGame 
+                    && button != Button.NewGame);
+            case GameStatus.Completed:
+                return (button != Button.RestartGame && button != Button.NewGame);
+            default:
+                return true;
+        }
+    }
+
+    private bool IsButtonGroupVisible(ButtonGroup buttonGroup)
+    {
+        switch (GameState.Status)
+        {
+            case GameStatus.Initial:
+            case GameStatus.Setup:
+                return (buttonGroup != ButtonGroup.Game);
+            case GameStatus.GameStart:
+            case GameStatus.Running:
+            case GameStatus.Paused:
+            case GameStatus.Completed:
+                return (buttonGroup != ButtonGroup.Setup);
+            default:
+                return true;
+        }
+    }
+
+    #endregion
+
+    #region Button events *************************************************************************
+
     private void ClearGame()
     {
-        GameState.IsKillerSudoku = false;
-        GameState.GameGrid.ResetGame();
-        GameState.Status = GameStatus.Setup;
+        GameState.Status = GameStatus.Initial;
     }
 
     private void StartGame()
     {
-        GameState.Status = GameStatus.Running;
+        GameState.Status = GameStatus.GameStart;
     }
 
     private void TogglePauseGame()
     {
-        if (GameState.Status == GameStatus.Running)
+        if (GameState.Status == GameStatus.GameStart || GameState.Status == GameStatus.Running)
         {
             PauseGame();
         }
@@ -191,15 +256,27 @@
 
     private void ContinueGame()
     {
-        GameState.Status = GameStatus.Running;
+        // Will automatically be updated to GameStatus.Running if the grid has any game values set.
+        GameState.Status = GameStatus.GameStart;
     }
 
-    private async Task CancelGameAsync()
+    private async Task ClearGridAsync()
     {
-        string dialogMessage = "Are you sure you want to cancel the game?";
+        string dialogMessage = "Are you sure you want to clear all initial values?";
         Action actionOnConfirmation = () =>
         {
-            GameState.Status = GameStatus.Cancelled;
+            GameState.Status = GameStatus.Initial;
+        };
+
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
+    }
+
+    private async Task RestartGameAsync()
+    {
+        string dialogMessage = "Are you sure you want to restart the game?";
+        Action actionOnConfirmation = () =>
+        {
+            GameState.Status = GameStatus.GameStart;
         };
 
         await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
@@ -238,6 +315,19 @@
         }
     }
 
+    #endregion
+
+    #region Dialog display ************************************************************************
+
+    private bool TwoButtonDialogIsVisible { get; set; } = false;
+    private string DialogMessage { get; set; } = "Are you sure?";
+    private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
+
+    private bool ErrorDialogIsVisible { get; set; } = false;
+    private string ErrorMessage { get; set; } = "An error occurred.";
+
+    private bool CongratulationsDialogIsVisible { get; set; } = false;
+
     private void ShowDialog()
     {
         TwoButtonDialogIsVisible = true;
@@ -263,8 +353,15 @@
         ErrorMessage = "An error occurred.";
     }
 
-    private async void RefreshMe()
+    private void ShowCongratulations()
     {
-        await InvokeAsync(() => StateHasChanged());
+        CongratulationsDialogIsVisible = true;
     }
+
+    private void CloseCongratulations()
+    {
+        CongratulationsDialogIsVisible = false;
+    }
+
+    #endregion
 }

@@ -31,6 +31,8 @@
                     return "ERROR!";
                 case DialogType.Warning:
                     return "Warning!";
+                case DialogType.Congratulations:
+                    return "CONGRATULATIONS!";
                 default:
                     return _title;
             }
@@ -57,6 +59,8 @@
                     return "img/rodentia-icons-dialog-warning-icon-noshadow.svg";
                 case DialogType.Info:
                     return "img/rodentia-icons-dialog-information-icon-noshadow.svg";
+                case DialogType.Congratulations:
+                    return "img/Google-Noto-Emoji-Activities-52707-party-popper.svg";
             }
             return string.Empty;
         }
@@ -74,6 +78,8 @@
                     return "dialog-title-warning";
                 case DialogType.Info:
                     return "dialog-title-info";
+                case DialogType.Congratulations:
+                    return "dialog-title-congratulations";
                 default:
                     return "dialog-title-generic";
             }

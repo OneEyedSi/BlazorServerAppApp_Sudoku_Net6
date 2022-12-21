@@ -42,6 +42,10 @@ namespace SudokuClassLibrary
             }
         }
 
+        public bool HasInitialValue => GetEnumerableCells().Any(c => c.IsInitialValue);
+        public bool HasGameValue => GetEnumerableCells().Any(c => c.HasValueSet && !c.IsInitialValue);
+        public bool GameIsComplete => GetEnumerableCells().All(c => c.HasValueSet);
+
         public void ResetGame()
         {
             // Assume if the first cell is null they all will be.
@@ -68,6 +72,15 @@ namespace SudokuClassLibrary
                 {
                     RemoveDiagonalGroups();
                 }
+            }
+        }
+
+        public void RestartGame()
+        {
+            var nonInitialCellls = this.GetEnumerableCells().Where(c => !c.IsInitialValue);
+            foreach(var cell in nonInitialCellls)
+            {
+                cell.Value = null;
             }
         }
 

@@ -18,6 +18,10 @@
     background-color: lemonchiffon;
 }
 
+.cellbackground-game-completed {
+    background-color: gold;
+}
+
 .cell-container {
     position: relative;
     width: 5rem;
@@ -52,11 +56,11 @@
     z-index: 5;
 }
 
-.cell-value-userinput {
+.cell-value-game {
     color: black;
 }
 
-.cell-value-intital {
+.cell-value-initial {
     color: #3300FF;
 }
 

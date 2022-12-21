@@ -37,7 +37,7 @@
     [Parameter()]
     public int CellColumn { get; set; } = 0;
 
-    [Parameter] 
+    [Parameter]
     public EventCallback<string> OnValueError { get; set; }
 
     private Library.Cell? _cellState;
@@ -59,6 +59,8 @@
             return _cellState;
         }
     }
+
+    private GameStatus _gameStatus => (GameState?.Status ?? GameStatus.Unknown);
 
     private string CellBackgroundClass
     {
@@ -89,6 +91,12 @@
                 return "cellbackground-evensquare";
             }
 
+            if (GameState?.GameIsComplete ?? false)
+            {
+                // Will only apply to odd-numbered squares.
+                return "cellbackground-game-completed";
+            }
+
             return "cellbackground-oddsquare";
         }
     }
@@ -99,7 +107,7 @@
 
     private string InputBoxClass => InputBoxIsVisible ? "cell-newvalue show" : "cell-newvalue hide";
 
-    private string ValueClass => CellState?.IsInitialValue ?? true ? "cell-value-intital" : "cell-value-userinput";
+    private string ValueClass => CellState?.IsInitialValue ?? true ? "cell-value-initial" : "cell-value-game";
 
     private int? CellValue
     {
@@ -115,7 +123,7 @@
             }
 
             // Initial values are read-only during game.
-            if ((GameState?.Status ?? GameStatus.Unknown) != GameStatus.Setup
+            if (_gameStatus != GameStatus.Initial && _gameStatus != GameStatus.Setup
                 && CellState.IsInitialValue)
             {
                 return;
@@ -129,7 +137,12 @@
 
             int? previousValue = CellState.Value;
 
-            if ((GameState?.Status ?? GameStatus.Unknown) == GameStatus.Setup)
+            if (value == previousValue)
+            {
+                return;
+            }
+
+            if (_gameStatus == GameStatus.Initial || _gameStatus == GameStatus.Setup)
             {
                 CellState.SetInitialValue(value);
             }
@@ -138,10 +151,7 @@
                 CellState.Value = value;
             }
 
-            if (value != previousValue)
-            {
-                GameState?.RequestRefresh();
-            }
+            GameState?.RequestRefresh();
         }
     }
 
@@ -186,7 +196,7 @@
         }
 
         // Initial values are read-only during game.
-        if ((GameState?.Status ?? GameStatus.Unknown) != GameStatus.Setup
+        if (_gameStatus != GameStatus.Initial && _gameStatus != GameStatus.Setup
             && CellState.IsInitialValue)
         {
             return;
