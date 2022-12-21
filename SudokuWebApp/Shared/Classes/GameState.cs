@@ -45,10 +45,16 @@ namespace SudokuWebApp.Shared.Classes
             }
             set
             {
-                PreviousStatus = _status;
+                GameStatus previousStatus = _status;
                 _status = value;
 
-                if (_status != PreviousStatus)
+                if (previousStatus != GameStatus.ModalDialogOpen 
+                    && _status != GameStatus.ModalDialogOpen)
+                {
+                    PreviousStatus = previousStatus;
+                }
+
+                if (_status != previousStatus)
                 {
                     OnStatusChanged();
                 }
@@ -96,6 +102,9 @@ namespace SudokuWebApp.Shared.Classes
                 case GameStatus.Completed:
                     OnCompletedStatusSet();
                     break;
+                case GameStatus.ModalDialogOpen:
+                    OnModalDialogOpenSet();
+                    break;
             }
 
             StatusChanged?.Invoke();
@@ -130,6 +139,11 @@ namespace SudokuWebApp.Shared.Classes
         private void OnCompletedStatusSet()
         {
             StopTimer();
+        }
+
+        private void OnModalDialogOpenSet()
+        {
+            PauseTimer();
         }
 
         private void ClearTimerAndLeaveStopped()

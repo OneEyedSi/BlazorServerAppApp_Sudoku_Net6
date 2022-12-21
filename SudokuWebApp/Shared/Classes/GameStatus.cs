@@ -8,6 +8,7 @@
         GameStart,
         Running,
         Paused,
-        Completed
+        Completed, 
+        ModalDialogOpen
     }
 }

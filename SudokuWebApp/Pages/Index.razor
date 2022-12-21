@@ -34,12 +34,12 @@
                     }
                 </table>
 
-                @if (TwoButtonDialogIsVisible)
+                @if (AreYouSureDialogIsVisible)
                 {
                     <TwoButtonDialog
                     Type="DialogType.AreYouSure"
                     Message=@DialogMessage
-                    OnResult="HandleDialogResult" />
+                    OnResult="HandleAreYouSureDialogResult" />
                 }
 
                 @if (ErrorDialogIsVisible)
@@ -82,7 +82,7 @@
                     </div>
                 }
                 <div class="page-buttons-multiple">
-                    <button class="btn btn-secondary" @onclick="@ClearGame">&lt; Undo</button>
+                        <button class="btn btn-secondary" @onclick="@StartGame">&lt; Undo</button>
                     <button class="btn btn-secondary" @onclick="StartGame">Redo &gt;</button>
                 </div>
             </div>
@@ -126,7 +126,8 @@
                         </ul>
 
                     <p>&nbsp;</p>
-                        <p>Current game state: @GameState.Status</p>
+                            <p>Current game state: @GameState.Status</p>
+                            <p>Previous game state: @GameState.PreviousStatus</p>
 
                     <p>&nbsp;</p>
                     <p>Dialog button pressed: @DialogResult</p>
@@ -182,8 +183,23 @@
 
     #region Button setup **************************************************************************
 
-    private string PauseContinueButtonText => GameState.Status == GameStatus.Paused ? "Continue" : "Pause";
-    private string PauseContinueButtonClass => GameState.Status == GameStatus.Paused ? "btn btn-primary" : "btn btn-info";
+    private string _pauseContinueButtonText = "Pause";
+    private string PauseContinueButtonText
+    {
+        get
+        {
+            return _pauseContinueButtonText;
+        }
+    }
+
+    private string _pauseContinueButtonClass = "btn btn-info";
+    private string PauseContinueButtonClass
+    {
+        get
+        {
+            return _pauseContinueButtonClass;
+        }
+    }
 
     private bool IsButtonDisabled(Button button)
     {
@@ -201,6 +217,8 @@
                     && button != Button.NewGame);
             case GameStatus.Completed:
                 return (button != Button.RestartGame && button != Button.NewGame);
+            case GameStatus.ModalDialogOpen:
+                return true;
             default:
                 return true;
         }
@@ -217,6 +235,7 @@
             case GameStatus.Running:
             case GameStatus.Paused:
             case GameStatus.Completed:
+            case GameStatus.ModalDialogOpen:
                 return (buttonGroup != ButtonGroup.Setup);
             default:
                 return true;
@@ -227,11 +246,6 @@
 
     #region Button events *************************************************************************
 
-    private void ClearGame()
-    {
-        GameState.Status = GameStatus.Initial;
-    }
-
     private void StartGame()
     {
         GameState.Status = GameStatus.GameStart;
@@ -241,10 +255,14 @@
     {
         if (GameState.Status == GameStatus.GameStart || GameState.Status == GameStatus.Running)
         {
+            _pauseContinueButtonText = "Continue";
+            _pauseContinueButtonClass = "btn btn-primary";
             PauseGame();
         }
         else if (GameState.Status == GameStatus.Paused)
         {
+            _pauseContinueButtonText = "Pause";
+            _pauseContinueButtonClass = "btn btn-info";
             ContinueGame();
         }
     }
@@ -256,8 +274,7 @@
 
     private void ContinueGame()
     {
-        // Will automatically be updated to GameStatus.Running if the grid has any game values set.
-        GameState.Status = GameStatus.GameStart;
+        GameState.Status = GameState.PreviousStatus;
     }
 
     private async Task ClearGridAsync()
@@ -285,22 +302,22 @@
     private async Task NewGameAsync()
     {
         string dialogMessage = "Are you sure you want to cancel this game and start a new one?";
-        Action actionOnConfirmation = () => ClearGame();
+        Action actionOnConfirmation = () =>
+        {
+            GameState.Status = GameStatus.Initial;
+        };
 
         await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
     }
 
     private async Task ActWithConfirmationAsync(string dialogMessage, Action actionOnConfirmation)
     {
-        // Want to pause the game while the dialog is open.  If the user chooses to cancel the 
-        // action then want to resume the previous status.
         var previousStatus = GameState.Status;
-        GameState.Status = GameStatus.Paused;
 
         DialogMessage = dialogMessage;
         DialogResult result = DialogResult.Unknown;
 
-        ShowDialog();
+        ShowAreYouSureDialog();
         await Utilities.WaitUntil(() => DialogResult != DialogResult.Unknown);
         result = DialogResult;
 
@@ -319,7 +336,7 @@
 
     #region Dialog display ************************************************************************
 
-    private bool TwoButtonDialogIsVisible { get; set; } = false;
+    private bool AreYouSureDialogIsVisible { get; set; } = false;
     private string DialogMessage { get; set; } = "Are you sure?";
     private DialogResult DialogResult { get; set; } = DialogResult.Unknown;
 
@@ -328,21 +345,22 @@
 
     private bool CongratulationsDialogIsVisible { get; set; } = false;
 
-    private void ShowDialog()
+    private void ShowAreYouSureDialog()
     {
-        TwoButtonDialogIsVisible = true;
+        GameState.Status = GameStatus.ModalDialogOpen;
+        AreYouSureDialogIsVisible = true;
         DialogResult = DialogResult.Unknown;
     }
 
-    private void HandleDialogResult(DialogResult result)
+    private void HandleAreYouSureDialogResult(DialogResult result)
     {
-        TwoButtonDialogIsVisible = false;
-
+        AreYouSureDialogIsVisible = false;
         DialogResult = result;
     }
 
     private void ShowError(string errorMessage)
     {
+        GameState.Status = GameStatus.ModalDialogOpen;
         ErrorMessage = errorMessage;
         ErrorDialogIsVisible = true;
     }
@@ -351,6 +369,7 @@
     {
         ErrorDialogIsVisible = false;
         ErrorMessage = "An error occurred.";
+        GameState.Status = GameState.PreviousStatus;
     }
 
     private void ShowCongratulations()
