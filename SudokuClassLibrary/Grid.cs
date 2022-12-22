@@ -77,8 +77,8 @@ namespace SudokuClassLibrary
 
         public void RestartGame()
         {
-            var nonInitialCellls = this.GetEnumerableCells().Where(c => !c.IsInitialValue);
-            foreach(var cell in nonInitialCellls)
+            var nonInitialCells = this.GetEnumerableCells().Where(c => !c.IsInitialValue);
+            foreach(var cell in nonInitialCells)
             {
                 cell.Value = null;
             }

@@ -67,11 +67,12 @@ namespace SudokuClassLibrary
                 IsValidValue(value);
                 int? previousValue = _value;
                 _value = value;
-                ResetPossibleValues();
                 int? newValue = _value;
 
                 if (newValue != previousValue)
                 {
+                    ResetPossibleValues();
+
                     var eventArgs = new CellValueChangedEventArgs(previousValue, newValue);
                     OnCellValueChanged(eventArgs);
                 }
