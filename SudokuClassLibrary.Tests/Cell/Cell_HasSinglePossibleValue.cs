@@ -39,7 +39,7 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Act
 
@@ -51,10 +51,10 @@ namespace SudokuClassLibrary.Tests.Cell
         {
             // Arrange
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Act
-            cell.Value = null;
+            cell.SetValue(null);
 
             // Assert
             cell.HasSinglePossibleValue.Should().BeFalse();

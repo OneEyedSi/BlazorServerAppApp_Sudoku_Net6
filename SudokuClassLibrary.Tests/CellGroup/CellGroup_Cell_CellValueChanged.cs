@@ -15,7 +15,7 @@ namespace SudokuClassLibrary.Tests.CellGroup
             cellGroup.AddCell(cell);
 
             // Act
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Assert
             cellGroup.GetAvailableValues().Should().NotBeNullOrEmpty()
@@ -29,10 +29,10 @@ namespace SudokuClassLibrary.Tests.CellGroup
             Sudoku.CellGroup cellGroup = new(CellGroupType.Row, 0);
             Sudoku.Cell cell = new(1, 1);
             cellGroup.AddCell(cell);
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Act
-            cell.Value = null;
+            cell.SetValue(null);
 
             // Assert
             cellGroup.GetAvailableValues().Should().NotBeNullOrEmpty()

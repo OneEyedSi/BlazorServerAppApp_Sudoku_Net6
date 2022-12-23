@@ -113,7 +113,7 @@
     {
         get
         {
-            return CellState?.Value;
+            return CellState?.GetValue();
         }
         set
         {
@@ -135,7 +135,7 @@
                 return;
             }
 
-            int? previousValue = CellState.Value;
+            int? previousValue = CellState.GetValue();
 
             if (value == previousValue)
             {
@@ -148,7 +148,7 @@
             }
             else
             {                
-                CellState.Value = value;
+                CellState.SetValue(value);
             }
 
             GameState?.RequestRefresh();

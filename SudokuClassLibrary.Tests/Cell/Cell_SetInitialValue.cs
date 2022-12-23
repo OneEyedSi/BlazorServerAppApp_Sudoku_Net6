@@ -44,13 +44,13 @@ namespace SudokuClassLibrary.Tests.Cell
             int? previousValue = 4;
             int? newValue = null;
             Sudoku.Cell cell = new Sudoku.Cell(1, 1);
-            cell.Value = previousValue;
+            cell.SetValue(previousValue);
 
             // Act
             cell.SetInitialValue(newValue);
 
             // Assert
-            cell.Value.HasValue.Should().BeFalse();
+            cell.GetValue().HasValue.Should().BeFalse();
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace SudokuClassLibrary.Tests.Cell
             cell.SetInitialValue(newValue);
 
             // Assert
-            cell.Value.ShouldHaveExpectedValue(expectedValue);
+            cell.GetValue().ShouldHaveExpectedValue(expectedValue);
         }
 
         [Fact]

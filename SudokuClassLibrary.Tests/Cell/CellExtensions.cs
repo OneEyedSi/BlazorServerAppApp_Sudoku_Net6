@@ -67,7 +67,7 @@ namespace SudokuClassLibrary.Tests.Cell
             {
                 foreach(var groupCell in group.Cells)
                 {
-                    groupCell.Value = null;
+                    groupCell.SetValue(null);
                 }
             }
         }

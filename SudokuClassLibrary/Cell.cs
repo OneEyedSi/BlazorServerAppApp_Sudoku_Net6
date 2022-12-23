@@ -11,13 +11,16 @@ namespace SudokuClassLibrary
 {
     public class CellValueChangedEventArgs : EventArgs
     {
-        public CellValueChangedEventArgs(int? previousValue, int? newValue)
+        public CellValueChangedEventArgs(int? previousValue, int? newValue, 
+            bool isReplayingHistory = false)
         {
             PreviousValue = previousValue;
             NewValue = newValue;
+            IsReplayingHistory = isReplayingHistory;
         }
         public int? PreviousValue { get; set; }
         public int? NewValue { get; set; }
+        public bool IsReplayingHistory { get; set; }
     }
 
     public class Cell
@@ -49,35 +52,6 @@ namespace SudokuClassLibrary
         public int Column => Position.Column;
 
         private int? _value;
-        public int? Value
-        {
-            get
-            {
-                return _value;
-            }
-
-            set
-            {
-                // Cannot change cell value if it was one of the initial values in the game.
-                if (IsInitialValue)
-                {
-                    return;
-                }
-
-                IsValidValue(value);
-                int? previousValue = _value;
-                _value = value;
-                int? newValue = _value;
-
-                if (newValue != previousValue)
-                {
-                    ResetPossibleValues();
-
-                    var eventArgs = new CellValueChangedEventArgs(previousValue, newValue);
-                    OnCellValueChanged(eventArgs);
-                }
-            }
-        }
 
         public bool HasValueSet { get { return (_value.HasValue); } }
         public bool HasSinglePossibleValue { get { return (GetOnlyPossibleValue() != null); } }
@@ -90,13 +64,40 @@ namespace SudokuClassLibrary
 
         #region Methods ***************************************************************************
 
-        public void SetInitialValue(int? value)
+        public void SetInitialValue(int? value, bool isReplayingHistory = false)
         {
             // Must clear IsInitialValue because, if it were previously set, it would prevent Value 
             // from being set.
             IsInitialValue = false;
-            Value = value;
+            SetValue(value, isReplayingHistory);
             IsInitialValue = value.HasValue;
+        }
+
+        public int? GetValue()
+        {
+            return _value;
+        }
+
+        public void SetValue(int? newValue, bool isReplayingHistory = false)
+        {
+            // Cannot change cell value if it was one of the initial values in the game.
+            if (IsInitialValue)
+            {
+                return;
+            }
+
+            IsValidValue(newValue);
+            int? previousValue = _value;
+            _value = newValue;
+
+            if (newValue != previousValue)
+            {
+                ResetPossibleValues();
+
+                var eventArgs = 
+                    new CellValueChangedEventArgs(previousValue, newValue, isReplayingHistory);
+                OnCellValueChanged(eventArgs);
+            }
         }
 
         public void RemoveInitialValue()

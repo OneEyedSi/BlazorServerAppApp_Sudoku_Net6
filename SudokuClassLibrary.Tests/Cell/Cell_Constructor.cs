@@ -53,7 +53,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new Sudoku.Cell(row, column, initialValue);
 
             // Assert
-            cell.Value.Value.Should().Be(initialValue);
+            cell.GetValue().Value.Should().Be(initialValue);
         }
 
         [Fact]
@@ -69,8 +69,8 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new Sudoku.Cell(position, initialValue);
 
             // Assert
-            cell.Value.HasValue.Should().BeTrue();
-            cell.Value.Value.Should().Be(initialValue);
+            cell.GetValue().HasValue.Should().BeTrue();
+            cell.GetValue().Value.Should().Be(initialValue);
         }
 
         [Fact]

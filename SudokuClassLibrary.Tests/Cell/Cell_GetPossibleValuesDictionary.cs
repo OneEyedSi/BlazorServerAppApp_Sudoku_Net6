@@ -60,7 +60,7 @@ namespace SudokuClassLibrary.Tests.Cell
             int expectedValue = newValue.Value;
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
             var possibleValues = cell.GetPossibleValuesDictionary();
 
             // Assert

@@ -299,17 +299,17 @@ namespace SudokuClassLibrary.Tests.Grid
                 for (int column = 0; column<= 8; column++) 
                 { 
                     var cell = grid.Cells[row, column];
-                    cell.Value = ((column + row) % 9) + 1;
+                    cell.SetValue(((column + row) % 9) + 1);
                 }
             }
 
-            int numberOfCellsWithValuesBefore = grid.GetEnumerableCells().Count(c => c.Value.HasValue);
+            int numberOfCellsWithValuesBefore = grid.GetEnumerableCells().Count(c => c.GetValue().HasValue);
 
             // Act
             grid.ResetGame();
 
             // Assert
-            int numberOfCellsWithValuesAfter = grid.GetEnumerableCells().Count(c => c.Value.HasValue);
+            int numberOfCellsWithValuesAfter = grid.GetEnumerableCells().Count(c => c.GetValue().HasValue);
             numberOfCellsWithValuesBefore.Should().Be(81);
             numberOfCellsWithValuesAfter.Should().Be(0);
         }

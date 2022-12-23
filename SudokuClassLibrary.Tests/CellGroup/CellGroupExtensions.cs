@@ -33,7 +33,7 @@ namespace SudokuClassLibrary.Tests.CellGroup
             foreach (int valueToSet in valuesToSet)
             {
                 Sudoku.Cell cell = new(1, valueToSet);
-                cell.Value = valueToSet;
+                cell.SetValue(valueToSet);
                 cellGroup.AddCell(cell);
             }
 

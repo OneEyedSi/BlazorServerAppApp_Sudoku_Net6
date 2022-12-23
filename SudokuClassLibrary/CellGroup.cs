@@ -119,7 +119,7 @@ namespace SudokuClassLibrary
         private void RecalculateAvailableValues()
         {
             InitializeAvailableValues();
-            var valuesAlreadyPlaced = Cells.Where(c => c.HasValueSet).Select(c => c.Value.Value);
+            var valuesAlreadyPlaced = Cells.Where(c => c.HasValueSet).Select(c => c.GetValue().Value);
             _availableValues = _availableValues.Except(valuesAlreadyPlaced).ToList();
             var eventArgs = new EventArgs();
             OnRecalculateCellPossibleValues(eventArgs);

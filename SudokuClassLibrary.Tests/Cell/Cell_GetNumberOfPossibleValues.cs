@@ -47,7 +47,7 @@ namespace SudokuClassLibrary.Tests.Cell
             int expectedNumber = 1;
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
             int actualNumberOfPossibleValues = cell.GetNumberOfPossibleValues();
 
             // Assert

@@ -47,7 +47,7 @@ namespace SudokuClassLibrary.Tests.CellGroup
             // Arrange
             Sudoku.CellGroup cellGroup = new(CellGroupType.Row, 0);
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Act
             cellGroup.AddCell(cell, doRecalculateValues: true);
@@ -80,7 +80,7 @@ namespace SudokuClassLibrary.Tests.CellGroup
             // Arrange
             Sudoku.CellGroup cellGroup = new(CellGroupType.Row, 0);
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = 4;
+            cell.SetValue(4);
 
             // Act
             cellGroup.AddCell(cell, doRecalculateValues: false);

@@ -1,6 +1,7 @@
-﻿using SudokuClassLibrary;
+﻿using Sudoku = SudokuClassLibrary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using SudokuClassLibrary;
 
 namespace SudokuWebApp.Shared.Classes
 {
@@ -9,9 +10,19 @@ namespace SudokuWebApp.Shared.Classes
         public event Action? RefreshRequested;
         public event Action? StatusChanged;
 
+        public GameState()
+        {
+            foreach (var cell in GameGrid.GetEnumerableCells())
+            {
+                cell.CellValueChanged += Cell_CellValueChanged;
+            }
+        }
+
         private Stopwatch _timer = new Stopwatch();
 
-        public Grid GameGrid { get; } = new();
+        public Sudoku.Grid GameGrid { get; } = new();
+
+        public Sudoku.History History { get; } = new();
 
         public TimeSpan ElapsedRunningTime => _timer.Elapsed;
 
@@ -78,9 +89,55 @@ namespace SudokuWebApp.Shared.Classes
 
         public bool GameIsComplete => GameGrid.GameIsComplete;
 
+        public bool CanUndo => History.CanUndo;
+        public bool CanRedo => History.CanRedo;
+
         public void RequestRefresh()
         {
             RefreshRequested?.Invoke();
+        }
+
+        public void OnUndo()
+        {
+            ReplayHistory(isUndo: true);
+        }
+
+        public void OnRedo()
+        {
+            ReplayHistory(isUndo: false);
+        }
+
+        private void ReplayHistory(bool isUndo)
+        {
+            HistoryValue? changeDetails = isUndo 
+                                            ? History.GetPreviousChange() 
+                                            : History.GetNextChange();
+            if (changeDetails == null)
+            {
+                return;
+            }
+
+            var cell = GameGrid.GetCellByPosition(changeDetails.Position);
+            if (cell == null)
+            {
+                return;
+            }
+
+            int? newCellValue = isUndo
+                                    ? changeDetails.PreviousValue
+                                    : changeDetails.NewValue;
+
+            switch (_status)
+            {
+                case GameStatus.Initial:
+                case GameStatus.Setup:
+                    cell.SetInitialValue(newCellValue, isReplayingHistory: true);
+                    break;
+                case GameStatus.GameStart:
+                case GameStatus.Running:
+                    cell.SetValue(newCellValue, isReplayingHistory: true);
+                    break;
+            }
         }
 
         public void OnStatusChanged()
@@ -115,12 +172,16 @@ namespace SudokuWebApp.Shared.Classes
             // Won't clear IsKillerSudoku but that's what we want.  If user set IsKillerSudoku 
             // previously assume they want to keep it until they manually clear it.
             GameGrid.ResetGame();
+            History.Clear();
             ClearTimerAndLeaveStopped();
         }
 
         private void OnGameStartStatusSet()
         {
             GameGrid.RestartGame();
+            // When start game clear history because don't want user to be able to undo setting 
+            // of initial values while game is running.
+            History.Clear();
             ClearAndRestartTimer();
         }
 
@@ -138,6 +199,7 @@ namespace SudokuWebApp.Shared.Classes
 
         private void OnCompletedStatusSet()
         {
+            History.Clear();
             StopTimer();
         }
 
@@ -177,25 +239,22 @@ namespace SudokuWebApp.Shared.Classes
             _timer.Stop();
         }
 
-        private void SwitchTimer(GameStatus previousStatus, GameStatus newStatus)
+        private void Cell_CellValueChanged(object? sender, Sudoku.CellValueChangedEventArgs eventArgs)
         {
-            if (newStatus == GameStatus.Running)
+            // Should be illegal - this method should only run on CellValueChanged event for a
+            // cell.
+            if (sender is not Sudoku.Cell changedCell)
             {
-                switch (previousStatus)
-                {
-                    case GameStatus.Setup:
-                        // Sets timer to 0 then starts it.
-                        _timer.Restart();
-                        break;
-                    case GameStatus.Paused:
-                        // Continues from previous timer Elapsed time; doesn't reset it to 0.
-                        _timer.Start();
-                        break;
-                }
+                return;
             }
-            else if (_timer.IsRunning)
+
+            // If replaying history don't want to add it to the history - end up toggling between
+            // Undo and Redo otherwise.
+            if (!eventArgs.IsReplayingHistory)
             {
-                _timer.Stop();
+                Sudoku.Position changedCellPosition = changedCell.Position;
+                HistoryValue changeDetails = new(changedCellPosition, eventArgs.PreviousValue, eventArgs.NewValue);
+                History.AddChange(changeDetails);
             }
         }
     }

@@ -18,7 +18,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            Action act = () => cell.Value = newValue;
+            Action act = () => cell.SetValue(newValue);
 
             // Assert
             act.Should().NotThrow();
@@ -32,7 +32,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             cell.HasValueSet.Should().BeFalse();
@@ -46,7 +46,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             cell.GetPossibleValuesDictionary().ShouldHaveExpectedValuesSetToRange(1, 9);
@@ -60,7 +60,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            Action act = () => cell.Value = newValue;
+            Action act = () => cell.SetValue(newValue);
 
             // Assert
             act.Should()
@@ -76,7 +76,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            Action act = () => cell.Value = newValue;
+            Action act = () => cell.SetValue(newValue);
 
             // Assert
             act.Should()
@@ -93,10 +93,10 @@ namespace SudokuClassLibrary.Tests.Cell
             int expectedValue = newValue.Value;
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
-            cell.Value.ShouldHaveExpectedValue(expectedValue);
+            cell.GetValue().ShouldHaveExpectedValue(expectedValue);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace SudokuClassLibrary.Tests.Cell
             Sudoku.Cell cell = new(1, 1);
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             cell.HasValueSet.Should().BeTrue();
@@ -122,7 +122,7 @@ namespace SudokuClassLibrary.Tests.Cell
             int expectedValue = newValue.Value;
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             cell.GetPossibleValuesDictionary().ShouldHaveExpectedValueSet(expectedValue);
@@ -137,7 +137,7 @@ namespace SudokuClassLibrary.Tests.Cell
             using IMonitor<Sudoku.Cell> monitoredCell = cell.Monitor();
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             monitoredCell.Should()
@@ -154,7 +154,7 @@ namespace SudokuClassLibrary.Tests.Cell
             using IMonitor<Sudoku.Cell> monitoredCell = cell.Monitor();
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             monitoredCell.Should()
@@ -169,11 +169,11 @@ namespace SudokuClassLibrary.Tests.Cell
             int? previousValue = 4;
             int? newValue = 4;
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = previousValue;
+            cell.SetValue(previousValue);
             using IMonitor<Sudoku.Cell> monitoredCell = cell.Monitor();
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
             monitoredCell.Should()
@@ -187,15 +187,15 @@ namespace SudokuClassLibrary.Tests.Cell
             int? initialValue = 4;
             int? newValue = 5;
             Sudoku.Cell cell = new(1, 1);
-            cell.Value = initialValue;
+            cell.SetValue(initialValue);
             cell.IsInitialValue = true;
             int expectedValue = initialValue.Value;
 
             // Act
-            cell.Value = newValue;
+            cell.SetValue(newValue);
 
             // Assert
-            cell.Value.ShouldHaveExpectedValue(expectedValue);
+            cell.GetValue().ShouldHaveExpectedValue(expectedValue);
         }
     }
 }
