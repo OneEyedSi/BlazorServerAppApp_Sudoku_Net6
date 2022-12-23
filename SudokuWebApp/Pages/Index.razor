@@ -6,6 +6,8 @@
 
 <div class="main">
    
+    <div class="game-title"><h1>@GameTitle</h1></div>
+
     @if (GameState == null)
     {
         <p>Loading game board ...</p>
@@ -14,8 +16,6 @@
     {   
         <div class="game-container">
             <div class="game-column">
-                <h1>@GameTitle</h1>
-
                 <table>
                     @for (int row = 0; row <= 8; row++)
                     {
@@ -91,49 +91,67 @@
                 </div>
             </div>
 
-                <div class="game-column">
-                    <h2>Instructions</h2>
+            <div class="game-column">
+                <h2>Instructions</h2>
 
-                    <p>Tick the checkbox to make this a <strong>Killer Sudoku</strong> game.</p>
+                <p>Tick the checkbox to make this a <strong>Killer Sudoku</strong> game.</p>
                     
-                    <div>
-                        <span class="killer-container">
-                            <label>Is Killer Sudoku:</label>
-                            <input type="checkbox" class="checkbox-large" disabled=@IsKillerSudokuDisabled @bind="GameState.IsKillerSudoku" />
-                        </span>
-                    </div>
-                    <p>&nbsp;</p>
-
-                    <p>Click on squares to enter the initial values.</p>
-
-                    <p>When you finish entering the initial values, click the 
-                        <strong>Start Game</strong> button to start the game and timer.</p>
-
-                    <p>The small numbers in each square indicate the possible                         
-                            valid values for that square.</p>
-
-                    <p>If a square has only one possible valid value it will be highlighted in pale yellow.</p>
-
-                    <p>During the game click on a square to enter or remove a value.</p>
-
-                    <p>The game will finish and the timer will stop when you set the value of the 
-                        last square in the game grid.</p>
-
-                    <p>At any time during the game you can use the following buttons:</p>
-                    <ul>
-                        <li><strong>Pause</strong> button:  Pauses the timer.  Continue the game again 
-                            via the <strong>Continue</strong> button;</li>
-                        <li><strong>Cancel</strong> button:  Cancels the game but leaves any set 
-                            values in place (so you can see where you went wrong);</li>
-                        <li><strong>New game</strong> button: Cancels the game and clears the game  
-                            grid so you can start again.</li>
-                        </ul>
-
-                    <p>&nbsp;</p>
-                        <p>Current game state: @GameState.Status</p>
-                        <p>Previous game state: @GameState.PreviousStatus</p>
-                        <p>Dialog button pressed: @DialogResult</p>
+                <div>
+                    <span class="killer-container">
+                        <input type="checkbox" class="checkbox-large" 
+                            disabled=@IsKillerSudokuDisabled @bind="GameState.IsKillerSudoku" />
+                        <label>Is Killer Sudoku</label>
+                    </span>
                 </div>
+                <p>&nbsp;</p>
+
+                <p>Click on squares to enter the initial values.</p>
+
+                <p>When you finish entering the initial values, click the 
+                    <strong>Start Game</strong> button to start the game and timer.</p>
+
+                <p>The small numbers in each square indicate the possible                         
+                        valid values for that square.</p>
+
+                <p>If a square has only one possible valid value it will be highlighted in pale yellow.</p>
+
+                <p>During the game click on a square to enter or remove a value.</p>
+
+                <p>The game will finish and the timer will stop when you set the value of the 
+                    last square in the game grid.</p>
+
+                <p>At any time during the game you can use the following buttons:</p>
+                <ul>
+                    <li><strong>Pause</strong> button:  Pauses the timer.  Continue the game again 
+                        via the <strong>Continue</strong> button;</li>
+                    <li><strong>Cancel</strong> button:  Cancels the game but leaves any set 
+                        values in place (so you can see where you went wrong);</li>
+                    <li><strong>New game</strong> button: Cancels the game and clears the game  
+                        grid so you can start again.</li>
+                </ul>
+
+                @*<p>Current game state: @GameState.Status</p>
+                <p>Previous game state: @GameState.PreviousStatus</p>
+                <p>Dialog button pressed: @DialogResult</p>*@
+                <div class="options-panel">
+                    <h2>Options</h2>
+
+                    <p>The following options can be changed at any time, during setup or during the game.</p>
+
+                    <p>They provide help to make the game easier.  You may find them most useful 
+                        in more difficult games, and that they make easier games too trivial.</p>
+
+                    <div class="options-container">
+                        <input type="checkbox" class="checkbox-large" 
+                            disabled=@AreOptionsDisabled @bind="GameState.ShowPossibleValues" />
+                        <label>Show possible cell values</label>
+                        <br/>
+                        <input type="checkbox" class="checkbox-large" 
+                            disabled=@AreOptionsDisabled @bind="GameState.HighlightSinglePossibleValue" />
+                        <label>Highlight cells with only one possible value</label>
+                    </div>
+                </div>
+            </div>            
         </div>
     }
 
@@ -177,9 +195,10 @@
 
     #region Miscellaneous setup *******************************************************************
 
-    private string GameTitle => GameState.IsKillerSudoku ? "Killer Sudoku!" : "Sudoku!";
-    private bool IsKillerSudokuDisabled => (GameState.Status != GameStatus.Initial 
+    private string GameTitle => (GameState?.IsKillerSudoku ?? false) ? "Killer Sudoku!" : "Sudoku!";
+    private bool IsKillerSudokuDisabled => (GameState.Status != GameStatus.Initial
                                         && GameState.Status != GameStatus.Setup);
+    private bool AreOptionsDisabled => (GameState.Status == GameStatus.Completed);
 
     #endregion
 

@@ -70,6 +70,11 @@ a, .btn-link {
     padding: 1.5rem !important;
 }
 
+.game-title {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
 .game-container {
     display: flex;
     flex-direction: row;
@@ -78,6 +83,14 @@ a, .btn-link {
 .game-column {
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
+}
+
+.options-panel {
+    padding: 1rem !important;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #DDD;
+    color: black;
 }
 
 .killer-container {
@@ -93,6 +106,21 @@ a, .btn-link {
     }
 
     .killer-container input {
+        vertical-align: middle;
+    }
+
+.options-container {
+    font-size: 1.2rem;
+    padding: 0.8rem 0.8rem;
+    margin: 0;
+    white-space: nowrap;
+}
+
+    .options-container label {
+        vertical-align: middle;
+    }
+
+    .options-container input {
         vertical-align: middle;
     }
 

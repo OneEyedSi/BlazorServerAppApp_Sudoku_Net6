@@ -87,6 +87,9 @@ namespace SudokuWebApp.Shared.Classes
             }
         }
 
+        public bool ShowPossibleValues { get; set; }
+        public bool HighlightSinglePossibleValue { get; set; }
+
         public bool GameIsComplete => GameGrid.GameIsComplete;
 
         public bool CanUndo => History.CanUndo;
