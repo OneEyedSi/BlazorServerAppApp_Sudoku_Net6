@@ -71,8 +71,8 @@ a, .btn-link {
 }
 
 .game-title {
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
 }
 
 .game-container {
@@ -81,14 +81,19 @@ a, .btn-link {
 }
 
 .game-column {
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+}
+
+.text-panel {
+    margin: 0.3rem 0px;
+    padding: 0.8rem !important;
+    border: 1px solid black;
+    border-radius: 10px;
+    color: black;
 }
 
 .options-panel {
-    padding: 1rem !important;
-    border: 1px solid black;
-    border-radius: 10px;
     background-color: #DDD;
     color: black;
 }
@@ -113,7 +118,6 @@ a, .btn-link {
     font-size: 1.2rem;
     padding: 0.8rem 0.8rem;
     margin: 0;
-    white-space: nowrap;
 }
 
     .options-container label {
