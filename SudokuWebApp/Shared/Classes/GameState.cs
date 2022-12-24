@@ -26,6 +26,7 @@ namespace SudokuWebApp.Shared.Classes
 
         public TimeSpan ElapsedRunningTime => _timer.Elapsed;
 
+        private Stack<GameStatus> _statusHistoryStack = new();
         private GameStatus _status = GameStatus.Initial;
         public GameStatus Status
         {
@@ -33,17 +34,17 @@ namespace SudokuWebApp.Shared.Classes
             {
                 if (_status == GameStatus.Initial && GameGrid.HasInitialValue)
                 {
-                    PreviousStatus = _status;
+                    _statusHistoryStack.Push(_status);
                     _status = GameStatus.Setup;
                 }
                 else if (_status == GameStatus.GameStart && _timer.ElapsedTicks > 0)
                 {
-                    PreviousStatus = _status;
+                    _statusHistoryStack.Push(_status);
                     _status = GameStatus.Running;
                 }
                 else if (_status == GameStatus.Running && GameGrid.GameIsComplete)
                 {
-                    PreviousStatus = _status;
+                    _statusHistoryStack.Push(_status);
                     _status = GameStatus.Completed;
                 }
 
@@ -59,10 +60,12 @@ namespace SudokuWebApp.Shared.Classes
                 GameStatus previousStatus = _status;
                 _status = value;
 
-                if (previousStatus != GameStatus.ModalDialogOpen 
-                    && _status != GameStatus.ModalDialogOpen)
+                // Don't want to push dialog box status onto history stack.
+                // It's just a temporary status, pausing before the user clicks a button 
+                //  to close the dialog.
+                if (previousStatus != GameStatus.ModalDialogOpen)
                 {
-                    PreviousStatus = previousStatus;
+                    _statusHistoryStack.Push(previousStatus);
                 }
 
                 if (_status != previousStatus)
@@ -72,7 +75,15 @@ namespace SudokuWebApp.Shared.Classes
             }
         }
 
-        public GameStatus PreviousStatus { get; private set; }
+        public GameStatus PreviousStatus => _statusHistoryStack.Any() 
+                                                ? _statusHistoryStack.Peek()
+                                                : GameStatus.Initial;
+
+        public void ResetToPreviousStatus()
+        {
+            GameStatus previousStatus = _statusHistoryStack.Pop();
+            _status = previousStatus;
+        }
 
         public bool IsKillerSudoku
         {

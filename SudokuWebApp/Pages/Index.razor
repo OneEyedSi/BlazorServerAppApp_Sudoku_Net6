@@ -292,7 +292,7 @@
 
     private void ContinueGame()
     {
-        GameState.Status = GameState.PreviousStatus;
+        GameState.ResetToPreviousStatus();
     }
 
     private async Task ClearGridAsync()
@@ -346,7 +346,7 @@
         else
         {
             // If dialog cancelled return to the previous game state.
-            GameState.Status = previousStatus;
+            GameState.ResetToPreviousStatus();
         }
     }
 
@@ -387,7 +387,7 @@
     {
         ErrorDialogIsVisible = false;
         ErrorMessage = "An error occurred.";
-        GameState.Status = GameState.PreviousStatus;
+        GameState.ResetToPreviousStatus();
     }
 
     private void ShowCongratulations()
