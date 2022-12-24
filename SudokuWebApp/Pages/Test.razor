@@ -1,56 +1,53 @@
 ﻿@page "/test"
+@inject IJSRuntime JS
 
 <PageTitle>Test</PageTitle>
 
 <h3>Test</h3>
 
 <div>
-    <button class="btn btn-success" @onclick="JumpToInputBox">Jump to Inputbox</button>
-    <button class="btn btn-primary" @onclick="@HideInputBox">Hide Inputbox</button>
+    <span class="timer-text">Time:</span>
+    <span id="timer" class="timer-text">00:00:00.00</span>
 </div>
 
-<p>&nbsp;</p>
+<div>
+    <button class="btn btn-success" @onclick="StartJsTimer">Start timer</button>
+    <button class="btn btn-success" @onclick="PauseJsTimer">Pause timer</button>
+    <button class="btn btn-success" @onclick="ResumeJsTimer">Resume timer</button>
+    <button class="btn btn-success" @onclick="RestartJsTimer">Restart timer</button>
+    <button class="btn btn-success" @onclick="StopJsTimer">Stop timer</button>
+    <button class="btn btn-success" @onclick="ClearJsTimer">Clear timer</button>
+</div>
 
-<form>
-    <input type="text" id="newvalue" name="newvalue" 
-    class=@InputBoxClass @ref=InputBox @bind="InputValue" />
-</form>
+@code { 
 
-<p>&nbsp;</p>
-
-<p>Input: @InputValue</p>
-
-@code {
-
-    private List<Func<Task>> _asyncActionsToRunAfterRender = new List<Func<Task>>();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task StartJsTimer()
     {
-        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender)
-        {
-            await asyncActionToRun();
-        }
-        _asyncActionsToRunAfterRender.Clear();
-
-        await base.OnAfterRenderAsync(firstRender);
+        await JS.InvokeVoidAsync("startTimer");
     }
 
-    private string? InputValue { get; set; }
-    private ElementReference InputBox;
-
-    private bool InputBoxIsVisible { get; set; } = false;
-
-    private string InputBoxClass => InputBoxIsVisible ? "textbox-large show" : "textbox-large hide";
-
-    private void JumpToInputBox()
+    private async Task PauseJsTimer()
     {
-        InputBoxIsVisible = true;
-        _asyncActionsToRunAfterRender.Add(() => InputBox.FocusAsync().AsTask());
+        await JS.InvokeVoidAsync("pauseTimer");
     }
 
-    private void HideInputBox()
+    private async Task ResumeJsTimer()
     {
-        InputValue = null;
-        InputBoxIsVisible = false;
+        await JS.InvokeVoidAsync("resumeTimer");
+    }
+
+    private async Task StopJsTimer()
+    {
+        await JS.InvokeVoidAsync("stopTimer");
+    }
+
+    private async Task ClearJsTimer()
+    {
+        await JS.InvokeVoidAsync("clearTimer");
+    }
+
+    private async Task RestartJsTimer()
+    {
+        await JS.InvokeVoidAsync("restartTimer");
     }
 }

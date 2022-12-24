@@ -6,3 +6,93 @@
 }
 
 <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+<script lang="javascript">
+
+    const timer = new Timer(50);
+
+    function Timer(interval) {
+        var parent = this;
+        var startTime, expected, timerId, elapsedMilliseconds;
+        this.interval = interval;
+
+        this.start = function() {
+            // If timer was running starts from scratch.
+            // Doesn't matter if timerId not set, won't throw an error, so can use it to start 
+            // timer from scratch, or to restart it from 0 if already running.
+            clearTimeout(timerId);
+            elapsedMilliseconds = 0;
+            startTime = Date.now();
+            expected = startTime + this.interval;
+            timerId = setTimeout(step, this.interval);
+        }
+
+        this.stop = function() {
+            clearTimeout(timerId);
+        }
+
+        this.resume = function() {
+            startTime = Date.now() - elapsedMilliseconds;
+            expected = startTime + this.interval;
+            timerId = setTimeout(step, this.interval);
+        }
+
+        this.clear = function() {
+            clearTimeout(timerId);
+            elapsedMilliseconds = 0;
+            displayTime(0);
+        }
+
+        function step() {
+             elapsedMilliseconds = Date.now() - startTime;
+             displayTime(elapsedMilliseconds);
+
+             var drift = Date.now() - expected;
+             expected += parent.interval;
+             timerId = setTimeout(step, (parent.interval - drift));
+        }
+    }
+
+    function displayTime(elapsedMilliseconds) {
+        // Only want 2 decimal places hence divide milliseconds by 10.
+        let fraction = Math.floor((elapsedMilliseconds % 1000) / 10);
+        let seconds = Math.floor(elapsedMilliseconds / 1000) % 60;
+        let minutes = Math.floor(elapsedMilliseconds / (1000 * 60)) % 60;
+        let hours = Math.floor(elapsedMilliseconds / (1000 * 60 * 60)) % 24;
+        const leadZeroTime = [hours, minutes, seconds, fraction].map(time => time < 10 ? `0${time}` : time);
+        // slice selects from first index up to but not including element at second index.
+        const hhmmss = leadZeroTime.slice(0, 3);
+        const paddedFraction = leadZeroTime.slice(3, 4);
+        document.getElementById("timer").innerHTML = hhmmss.join(':') + `.${paddedFraction}`;
+    }
+
+    window.startTimer = function() {
+        timer.start();
+    };
+
+    window.pauseTimer = function() {
+        // No difference between stop and pause, except in the workflow:
+        //  stop -> clear
+        //  pause -> resume
+        timer.stop();
+    };
+
+    window.resumeTimer = function() {
+        timer.resume();
+    };
+
+    window.stopTimer = function() {
+        timer.stop();
+    };
+
+    window.clearTimer = function() {
+        timer.clear();
+    };
+
+    window.restartTimer = function() {
+        // No difference between start and restart, both will reset the timer to 0 if it was 
+        // already running.
+        timer.start();
+    };
+
+</script>
