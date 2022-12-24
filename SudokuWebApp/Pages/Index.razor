@@ -144,16 +144,6 @@
         GameState.RefreshRequested += RefreshMe;
     }
 
-    protected override async Task OnAfterRenderAsync (bool firstRender)
-    {
-        if (firstRender)
-        {
-            GameState.Status = GameStatus.Initial;
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
     public void Dispose()
     {
         GameState.RefreshRequested -= RefreshMe;
