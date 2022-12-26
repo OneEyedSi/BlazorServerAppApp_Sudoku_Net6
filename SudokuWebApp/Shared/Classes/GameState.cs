@@ -10,8 +10,12 @@ namespace SudokuWebApp.Shared.Classes
         public event Action? RefreshRequested;
         public event Action? StatusChanged;
 
-        public GameState()
+        private ILogger _logger;
+
+        public GameState(ILogger<GameState> logger)
         {
+            _logger = logger;
+            _logger.LogInformation("Initializing GameState.");
             foreach (var cell in GameGrid.GetEnumerableCells())
             {
                 cell.CellValueChanged += Cell_CellValueChanged;
