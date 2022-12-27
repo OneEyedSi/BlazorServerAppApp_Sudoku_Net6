@@ -2,13 +2,23 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using SudokuClassLibrary;
+using SudokuWebApp.Shared.Classes;
 
 namespace SudokuWebApp.Shared.Classes
 {
+    public class GameStatusChangedEventArgs : EventArgs
+    {
+        public GameStatusChangedEventArgs(GameStatus currentStatus)
+        {
+            CurrentStatus = currentStatus;
+        }
+        public GameStatus CurrentStatus { get; set; }
+    }
+
     public class GameState
     {
         public event Action? RefreshRequested;
-        public event Action? StatusChanged;
+        public event EventHandler<GameStatusChangedEventArgs>? StatusChanged;
 
         private ILogger _logger;
 
@@ -22,13 +32,9 @@ namespace SudokuWebApp.Shared.Classes
             }
         }
 
-        private Stopwatch _timer = new Stopwatch();
-
         public Sudoku.Grid GameGrid { get; } = new();
 
         public Sudoku.History History { get; } = new();
-
-        public TimeSpan ElapsedRunningTime => _timer.Elapsed;
 
         private Stack<GameStatus> _statusHistoryStack = new();
         private GameStatus _status = GameStatus.Initial;
@@ -36,46 +42,36 @@ namespace SudokuWebApp.Shared.Classes
         {
             get
             {
-                if (_status == GameStatus.Initial && GameGrid.HasInitialValue)
-                {
-                    _statusHistoryStack.Push(_status);
-                    _status = GameStatus.Setup;
-                }
-                else if (_status == GameStatus.GameStart && _timer.ElapsedTicks > 0)
-                {
-                    _statusHistoryStack.Push(_status);
-                    _status = GameStatus.Running;
-                }
-                else if (_status == GameStatus.Running && GameGrid.GameIsComplete)
-                {
-                    _statusHistoryStack.Push(_status);
-                    _status = GameStatus.Completed;
-                }
-
-                if (_status != PreviousStatus)
-                {
-                    OnStatusChanged();
-                }
-
+                _logger.LogDebug("Getting Game Status: {_status}", _status);
                 return _status;
             }
             set
             {
-                GameStatus previousStatus = _status;
-                _status = value;
+                SetStatus(value);
+            }
+        }
 
-                // Don't want to push dialog box status onto history stack.
-                // It's just a temporary status, pausing before the user clicks a button 
-                //  to close the dialog.
-                if (previousStatus != GameStatus.ModalDialogOpen)
-                {
-                    _statusHistoryStack.Push(previousStatus);
-                }
+        private void SetStatus(GameStatus newValue, bool isRecursive = false)
+        {
+            _logger.LogDebug("Setting game Status: PreviousStatus: {_status}, new Status: {value}...",
+                    _status, newValue);
+            GameStatus previousStatus = _status;
+            _status = newValue;
 
-                if (_status != previousStatus)
-                {
-                    OnStatusChanged();
-                }
+            // Don't want to push dialog box status onto history stack.
+            // It's just a temporary status, pausing before the user clicks a button 
+            //  to close the dialog.
+            if (previousStatus != GameStatus.ModalDialogOpen)
+            {
+                _statusHistoryStack.Push(previousStatus);
+            }
+
+            // If status is Running, need to call OnStatusChanged to change status to Completed, 
+            // if appropriate.
+            if (_status == GameStatus.Running || _status != previousStatus)
+            {
+                _logger.LogDebug("Setting game Status: Calling OnStatusChanged()...");
+                OnStatusChanged();
             }
         }
 
@@ -85,8 +81,15 @@ namespace SudokuWebApp.Shared.Classes
 
         public void ResetToPreviousStatus()
         {
-            GameStatus previousStatus = _statusHistoryStack.Pop();
-            _status = previousStatus;
+            GameStatus oldStatus = _status;
+            GameStatus statusToSet = _statusHistoryStack.Pop();
+            _logger.LogDebug("Resetting game Status to: {previousStatus}...", statusToSet);
+            _status = statusToSet;
+            if (oldStatus != _status)
+            {
+                _logger.LogDebug("Resetting game Status: Calling OnStatusChanged()...");
+                OnStatusChanged();
+            }
         }
 
         public bool IsKillerSudoku
@@ -127,6 +130,8 @@ namespace SudokuWebApp.Shared.Classes
 
         private void ReplayHistory(bool isUndo)
         {
+            _logger.LogDebug($"{(isUndo ? "Undo" : "Redo")}ing change...");
+
             HistoryValue? changeDetails = isUndo 
                                             ? History.GetPreviousChange() 
                                             : History.GetNextChange();
@@ -138,12 +143,15 @@ namespace SudokuWebApp.Shared.Classes
             var cell = GameGrid.GetCellByPosition(changeDetails.Position);
             if (cell == null)
             {
+                _logger.LogDebug("No cell specified, aborting change.");
                 return;
             }
 
             int? newCellValue = isUndo
                                     ? changeDetails.PreviousValue
                                     : changeDetails.NewValue;
+
+            _logger.LogDebug($"{(isUndo ? "Undo" : "Redo")}: Changing cell[{cell.Row}, {cell.Column}] value to {newCellValue}.");
 
             switch (_status)
             {
@@ -160,6 +168,7 @@ namespace SudokuWebApp.Shared.Classes
 
         public void OnStatusChanged()
         {
+            _logger.LogDebug("GameState OnStatusChanged called...");
             switch (_status)
             {
                 case GameStatus.Initial:
@@ -168,101 +177,65 @@ namespace SudokuWebApp.Shared.Classes
                 case GameStatus.GameStart:
                     OnGameStartStatusSet();
                     break;
-                case GameStatus.Paused: 
-                    OnPausedStatusSet();
-                    break;
                 case GameStatus.Running:
                     OnRunningStatusSet();
                     break;
                 case GameStatus.Completed:
                     OnCompletedStatusSet();
                     break;
-                case GameStatus.ModalDialogOpen:
-                    OnModalDialogOpenSet();
-                    break;
             }
 
-            StatusChanged?.Invoke();
+            var eventArgs = new GameStatusChangedEventArgs(_status);
+            StatusChanged?.Invoke(this, eventArgs);
         }
 
         private void OnInitialStatusSet()
         {
+            _logger.LogDebug("GameState OnInitialStatusSet called: Resetting game and clearing History.");
             // Won't clear IsKillerSudoku but that's what we want.  If user set IsKillerSudoku 
             // previously assume they want to keep it until they manually clear it.
             GameGrid.ResetGame();
             History.Clear();
-            ClearTimerAndLeaveStopped();
+            // Want to clear the grid and history but then move status to Setup.
+            Status = GameStatus.Setup;
         }
 
         private void OnGameStartStatusSet()
         {
+            _logger.LogDebug("GameState OnGameStartStatusSet called: Restarting game and clearing History.");
             GameGrid.RestartGame();
             // When start game clear history because don't want user to be able to undo setting 
             // of initial values while game is running.
             History.Clear();
-            ClearAndRestartTimer();
-        }
-
-        private void OnPausedStatusSet()
-        {
-            PauseTimer();
+            // Want to clear any game values (but not initial values) and the history but then
+            // move status to Running.
+            Status = GameStatus.Running;
         }
 
         private void OnRunningStatusSet()
         {
-            // Won't cause a problem if timer already running, but will start running again if 
-            // previously paused.
-            ContinueTimer();
+            _logger.LogDebug("GameState OnRunningStatusSet called, checking if game is complete.");
+            if (GameGrid.GameIsComplete)
+            {
+                Status = GameStatus.Completed;
+            }
         }
 
         private void OnCompletedStatusSet()
         {
+            _logger.LogDebug("GameState OnCompletedStatusSet called, clearing History.");
             History.Clear();
-            StopTimer();
-        }
-
-        private void OnModalDialogOpenSet()
-        {
-            PauseTimer();
-        }
-
-        private void ClearTimerAndLeaveStopped()
-        {
-            _timer.Reset();
-        }
-
-        private void ClearAndRestartTimer()
-        {
-            _timer.Restart();
-        }
-
-        private void PauseTimer()
-        {
-            // Exactly same as stop.  Only difference in the game is the workflow:
-            //  Pause --> Continue
-            //  Stop --> Clear
-            StopTimer();
-        }
-
-        private void ContinueTimer()
-        {
-            // Starts timer running from previously stopped value; doesn't clear it.
-            // Will not throw if already running.
-            _timer.Start();
-        }
-
-        private void StopTimer()
-        {
-            // Will not throw if not running.
-            _timer.Stop();
         }
 
         private void Cell_CellValueChanged(object? sender, Sudoku.CellValueChangedEventArgs eventArgs)
         {
+            _logger.LogDebug("GameState Cell_CellValueChanged called...");
+
             // Should be illegal - this method should only run on CellValueChanged event for a
             // cell.
             if (sender is not Sudoku.Cell changedCell)
             {
+                _logger.LogDebug("GameState Cell_CellValueChanged called but no changedCell set.");
                 return;
             }
 
@@ -270,9 +243,17 @@ namespace SudokuWebApp.Shared.Classes
             // Undo and Redo otherwise.
             if (!eventArgs.IsReplayingHistory)
             {
+                _logger.LogDebug("GameState Cell_CellValueChanged: Recording change in History.");
                 Sudoku.Position changedCellPosition = changedCell.Position;
                 HistoryValue changeDetails = new(changedCellPosition, eventArgs.PreviousValue, eventArgs.NewValue);
                 History.AddChange(changeDetails);
+            }
+
+            // Move to new statuses if game conditions have changed.
+            if ((_status == GameStatus.Initial && GameGrid.HasInitialValue) 
+                || (_status == GameStatus.Running && GameGrid.GameIsComplete))
+            {
+                OnStatusChanged();
             }
         }
     }

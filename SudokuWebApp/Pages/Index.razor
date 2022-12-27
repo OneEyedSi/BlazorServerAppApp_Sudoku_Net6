@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using SudokuClassLibrary
 @inject GameState GameState
+@inject IJSRuntime JS
+@inject ILogger<Index> Logger
 
 <PageTitle>Sudoku Game</PageTitle>
 
@@ -14,6 +16,11 @@
     }
     else
     {   
+        <div>
+            <span class="timer-text">Time:</span>
+            <span id="timer" class="timer-text">00:00:00.00</span>
+        </div>
+
         <div class="game-container">
             <div class="game-column">
                 <table>
@@ -66,7 +73,7 @@
                             @onclick="@ClearGridAsync">Clear game grid</button>
                         <button class="btn btn-success" 
                             disabled=@IsButtonDisabled(Button.StartGame)
-                            @onclick="StartGame">Start game</button>
+                            @onclick="StartGameAsync">Start game</button>
                     </div>
                 }
                 @if (IsButtonGroupVisible(ButtonGroup.Game))
@@ -74,7 +81,7 @@
                     <div class="page-buttons-multiple">
                         <button class="@PauseContinueButtonClass pause-continue-button" 
                                 disabled=@IsButtonDisabled(Button.PauseContinue)
-                                @onclick="TogglePauseGame">@PauseContinueButtonText</button>
+                                @onclick="TogglePauseGameAsync">@PauseContinueButtonText</button>
                         <button class="btn btn-warning"  
                                 disabled=@IsButtonDisabled(Button.RestartGame)
                                 @onclick="@RestartGameAsync">Restart game</button>
@@ -121,9 +128,9 @@
                     </div>
                 </div>
 
-                @*<p>Current game state: @GameState.Status</p>
+                <p>Current game state: @GameState.Status</p>
                 <p>Previous game state: @GameState.PreviousStatus</p>
-                <p>Dialog button pressed: @DialogResult</p>*@
+                <p>Dialog button pressed: @DialogResult</p>
 
                 <p/>
                 <h2>Instructions</h2>
@@ -141,22 +148,132 @@
 
     protected override void OnInitialized()
     {
+        Logger.LogDebug("Initializing Index page...");
         GameState.RefreshRequested += RefreshMe;
+        GameState.StatusChanged += GameState_StatusChanged;
+    }
+
+    private List<Func<Task>> _asyncActionsToRunAfterRender = new List<Func<Task>>();
+    private Queue<string> _jsFunctionsToExecute = new();
+
+    protected override async Task OnAfterRenderAsync (bool firstRender)
+    {
+        Logger.LogDebug("Executing Index OnAfterRenderAsync...");
+
+        Logger.LogDebug($"Index OnAfterRenderAsync: Running {_asyncActionsToRunAfterRender.Count} after render actions...");
+        while (_jsFunctionsToExecute.TryDequeue(out string? jsFunctionName))
+        {
+            if (!string.IsNullOrWhiteSpace(jsFunctionName))
+            {
+                await SafeJsVoidCall(jsFunctionName);
+            }
+        }
+
+        foreach (var asyncActionToRun in _asyncActionsToRunAfterRender.ToList())
+        {
+            await asyncActionToRun();
+        }
+        _asyncActionsToRunAfterRender.Clear();
+
+        Logger.LogDebug("Index OnAfterRenderAsync: Calling base method.");
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     public void Dispose()
     {
+        Logger.LogDebug("Disposing Index page...");
+
         GameState.RefreshRequested -= RefreshMe;
+        GameState.StatusChanged -= GameState_StatusChanged;
     }
 
     private async void RefreshMe()
     {
+        Logger.LogDebug("Executing Index RefreshMe...");
         await InvokeAsync(() => StateHasChanged());
 
         if (GameState.GameIsComplete)
         {
+            Logger.LogDebug("Index RefreshMe: Game is complete.");
             ShowCongratulations();
         }
+    }
+
+    private async void GameState_StatusChanged(object? sender, GameStatusChangedEventArgs eventArgs)
+    {
+        Logger.LogDebug("Index GameState_StatusChanged event handler executing...");
+
+        GameStatus currentStatus = eventArgs.CurrentStatus;
+        Logger.LogDebug("Index GameState_StatusChanged: Current game status: {currentStatus}.",
+            currentStatus);
+
+        switch(currentStatus)
+        {
+            case GameStatus.Initial:
+                await OnInitialStatusSet();
+                break;
+            case GameStatus.GameStart:
+                await OnGameStartStatusSet();
+                break;
+            case GameStatus.Paused:
+                await OnPausedStatusSet();
+                break;
+            case GameStatus.Running:
+                await OnRunningStatusSet();
+                break;
+            case GameStatus.Completed:
+                await OnCompletedStatusSet();
+                break;
+            case GameStatus.ModalDialogOpen:
+                await OnModalDialogOpenSet();
+                break;
+        }
+
+        RefreshMe();
+    }
+
+    private async Task OnInitialStatusSet()
+    {
+        Logger.LogDebug("Index OnInitialStatusSet executing...");
+        await ClearJsTimerAndLeaveStoppedAsync();
+        //EnqueueJsFunctionNameToExecute("clearTimer");
+    }
+
+    private async Task OnGameStartStatusSet()
+    {
+        Logger.LogDebug("Index OnGameStartStatusSet executing...");
+        //await ClearAndRestartJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("restartTimer");
+    }
+
+    private async Task OnPausedStatusSet()
+    {
+        Logger.LogDebug("Index OnPausedStatusSet executing...");
+        //await PauseJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("pauseTimer");
+    }
+
+    private async Task OnRunningStatusSet()
+    {
+        Logger.LogDebug("Index OnRunningStatusSet executing...");
+        // Won't cause a problem if timer already running, but will start running again if 
+        // previously paused.
+        //await ResumeJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("resumeTimer");
+    }
+
+    private async Task OnCompletedStatusSet()
+    {
+        Logger.LogDebug("Index OnCompletedStatusSet executing...");
+        await StopJsTimerAsync();
+        //EnqueueJsFunctionNameToExecute("stopTimer");
+    }
+
+    private async Task OnModalDialogOpenSet()
+    {
+        Logger.LogDebug("Index OnModalDialogOpenSet executing...");
+        //await PauseJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("pauseTimer");
     }
 
     #endregion
@@ -192,6 +309,8 @@
 
     private bool IsButtonDisabled(Button button)
     {
+        Logger.LogDebug("Index IsButtonDisabled executing for button {button}...", button);
+
         if (button == Button.Undo)
         {
             return !GameState.History.CanUndo;
@@ -207,8 +326,6 @@
                 return (button != Button.ClearGrid);
             case GameStatus.Setup:
                 return (button != Button.ClearGrid && button != Button.StartGame);
-            case GameStatus.GameStart:
-                return (button != Button.PauseContinue && button != Button.NewGame);
             case GameStatus.Running:
             case GameStatus.Paused:
                 return (button != Button.PauseContinue && button != Button.RestartGame 
@@ -224,6 +341,8 @@
 
     private bool IsButtonGroupVisible(ButtonGroup buttonGroup)
     {
+        Logger.LogDebug("Index IsButtonGroupVisible executing for button group {buttonGroup}...", buttonGroup);
+
         switch (GameState.Status)
         {
             case GameStatus.Initial:
@@ -246,29 +365,42 @@
 
     private void UndoChange()
     {
+        Logger.LogDebug("Index UndoChange executing...");
         GameState.OnUndo();
     }
 
     private void RedoChange()
     {
+        Logger.LogDebug("Index RedoChange executing...");
         GameState.OnRedo();
     }
 
-    private void StartGame()
+    private async Task StartGameAsync()
     {
+        Logger.LogDebug("Index StartGame executing...");
+        await StartJsTimerAsync();
         GameState.Status = GameStatus.GameStart;
     }
 
-    private void TogglePauseGame()
+    private async Task TogglePauseGameAsync()
     {
+        Logger.LogDebug("Index TogglePauseGame executing...");
+
         if (GameState.Status == GameStatus.GameStart || GameState.Status == GameStatus.Running)
         {
+            Logger.LogDebug("Index TogglePauseGame: Pausing game...");
+            //await PauseJsTimerAsync();
+            //_jsFunctionsToExecute.Enqueue("pauseTimer");
+            EnqueueJsFunctionNameToExecute("pauseTimer");
             _pauseContinueButtonText = "Continue";
             _pauseContinueButtonClass = "btn btn-primary";
             PauseGame();
         }
         else if (GameState.Status == GameStatus.Paused)
         {
+            Logger.LogDebug("Index TogglePauseGame: Resuming game...");
+            //await ResumeJsTimerAsync();
+            EnqueueJsFunctionNameToExecute("resumeTimer");
             _pauseContinueButtonText = "Pause";
             _pauseContinueButtonClass = "btn btn-info";
             ContinueGame();
@@ -277,16 +409,20 @@
 
     private void PauseGame()
     {
+        Logger.LogDebug("Index PauseGame executing...");
         GameState.Status = GameStatus.Paused;
     }
 
     private void ContinueGame()
     {
+        Logger.LogDebug("Index ContinueGame executing...");
         GameState.ResetToPreviousStatus();
     }
 
     private async Task ClearGridAsync()
     {
+        Logger.LogDebug("Index ClearGridAsync executing...");
+
         string dialogMessage = "Are you sure you want to clear all initial values?";
         Action actionOnConfirmation = () =>
         {
@@ -298,9 +434,12 @@
 
     private async Task RestartGameAsync()
     {
+        Logger.LogDebug("Index RestartGameAsync executing...");
+
         string dialogMessage = "Are you sure you want to restart the game?";
         Action actionOnConfirmation = () =>
         {
+            EnqueueJsFunctionNameToExecute("restartTimer");
             GameState.Status = GameStatus.GameStart;
         };
 
@@ -309,9 +448,12 @@
 
     private async Task NewGameAsync()
     {
+        Logger.LogDebug("Index NewGameAsync executing...");
+
         string dialogMessage = "Are you sure you want to cancel this game and start a new one?";
         Action actionOnConfirmation = () =>
         {
+            EnqueueJsFunctionNameToExecute("clearTimer");
             GameState.Status = GameStatus.Initial;
         };
 
@@ -320,21 +462,28 @@
 
     private async Task ActWithConfirmationAsync(string dialogMessage, Action actionOnConfirmation)
     {
+        Logger.LogDebug("Index ActWithConfirmationAsync executing...");
+
         var previousStatus = GameState.Status;
 
         DialogMessage = dialogMessage;
         DialogResult result = DialogResult.Unknown;
 
+        Logger.LogDebug("Index ActWithConfirmationAsync: Showing Are You Sure dialog...");
         ShowAreYouSureDialog();
         await Utilities.WaitUntil(() => DialogResult != DialogResult.Unknown);
         result = DialogResult;
 
+        Logger.LogDebug("Index ActWithConfirmationAsync: Are You Sure result: {result}.", result);
+
         if (result == DialogResult.Ok)
         {
+            Logger.LogDebug("Index ActWithConfirmationAsync: User confirmed they are sure; performing action...");
             actionOnConfirmation();
         }
         else
         {
+            Logger.LogDebug("Index ActWithConfirmationAsync: User cancelled action, resetting to previous game status...");
             // If dialog cancelled return to the previous game state.
             GameState.ResetToPreviousStatus();
         }
@@ -355,6 +504,7 @@
 
     private void ShowAreYouSureDialog()
     {
+        Logger.LogDebug("Index ShowAreYouSureDialog executing...");
         GameState.Status = GameStatus.ModalDialogOpen;
         AreYouSureDialogIsVisible = true;
         DialogResult = DialogResult.Unknown;
@@ -362,12 +512,14 @@
 
     private void HandleAreYouSureDialogResult(DialogResult result)
     {
+        Logger.LogDebug("Index HandleAreYouSureDialogResult: Are You Sure result: {result}.", result);
         AreYouSureDialogIsVisible = false;
         DialogResult = result;
     }
 
     private void ShowError(string errorMessage)
     {
+        Logger.LogDebug("Index ShowError executing...");
         GameState.Status = GameStatus.ModalDialogOpen;
         ErrorMessage = errorMessage;
         ErrorDialogIsVisible = true;
@@ -375,6 +527,7 @@
 
     private void CloseError()
     {
+        Logger.LogDebug("Index CloseError executing: Resetting to previous game status...");
         ErrorDialogIsVisible = false;
         ErrorMessage = "An error occurred.";
         GameState.ResetToPreviousStatus();
@@ -382,13 +535,90 @@
 
     private void ShowCongratulations()
     {
+        Logger.LogDebug("Index ShowCongratulations executing...");
         CongratulationsDialogIsVisible = true;
     }
 
     private void CloseCongratulations()
     {
+        Logger.LogDebug("Index CloseCongratulations executing...");
         CongratulationsDialogIsVisible = false;
     }
 
     #endregion
+
+    #region Control timer *************************************************************************
+
+    private async Task StartJsTimerAsync()
+    {
+        Logger.LogDebug("Index StartJsTimerAsync executing...");
+        await SafeJsVoidCall("startTimer");
+    }
+
+    private async Task StopJsTimerAsync()
+    {
+        Logger.LogDebug("Index StopJsTimerAsync executing...");
+        await SafeJsVoidCall("stopTimer");
+    }
+
+    private async Task PauseJsTimerAsync()
+    {
+        Logger.LogDebug("Index PauseJsTimerAsync executing...");
+        //await SafeJsVoidCall("pauseTimer");
+    }
+
+    private async Task ResumeJsTimerAsync()
+    {
+        Logger.LogDebug("Index ResumeJsTimerAsync executing...");
+        //await SafeJsVoidCall("resumeTimer");
+    }
+
+    private async Task ClearJsTimerAndLeaveStoppedAsync()
+    {
+        Logger.LogDebug("Index ClearJsTimerAndLeaveStoppedAsync executing...");
+        await SafeJsVoidCall("clearTimer");
+    }
+
+    private async Task ClearAndRestartJsTimerAsync()
+    {
+        Logger.LogDebug("Index ClearAndRestartJsTimerAsync executing...");
+        await SafeJsVoidCall("restartTimer");
+    }
+
+    #endregion
+
+    private void EnqueueJsFunctionNameToExecute(string? jsFunctionName)
+    {
+        // Want to debounce: avoid queuing the same function multiple times.
+        if (string.IsNullOrWhiteSpace(jsFunctionName)
+        || _jsFunctionsToExecute.Contains(jsFunctionName))
+        {
+            return;
+        }
+        _jsFunctionsToExecute.Enqueue(jsFunctionName);
+    }
+
+    private async Task SafeJsVoidCall(string jsFunctionName)
+    {
+        Logger.LogDebug("Index SafeJsVoidCall: Attempting to execute JS function {jsFunctionName}...", 
+            jsFunctionName);
+        try
+        {
+            await JS.InvokeVoidAsync(jsFunctionName);
+            Logger.LogDebug("Index SafeJsVoidCall for {jsFunctionName}: JS function completed.", 
+                jsFunctionName);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Logger.LogDebug(ex, "Index SafeJsVoidCall for {jsFunctionName}: InvalidOperationException.",
+                jsFunctionName);
+            //_asyncActionsToRunAfterRender.Add(() => JS.InvokeVoidAsync(jsFunctionName).AsTask());
+        }
+        catch (JSDisconnectedException ex)
+        {
+            Logger.LogDebug(ex, "Index SafeJsVoidCall for {jsFunctionName}: JSDisconnectedException.",
+                jsFunctionName);
+            // Do nothing.
+        }
+    }
 }

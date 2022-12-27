@@ -24,8 +24,8 @@
 
 .cell-container {
     position: relative;
-    width: 5rem;
-    height: 5rem;
+    width: 4.5rem;
+    height: 4.5rem;
 }
 
 .possiblevalues-table {
@@ -37,15 +37,15 @@
 }
 
     .possiblevalues-table td {
-        font-size: 1rem;
+        font-size: 0.9rem;
         text-align: center;
         vertical-align: middle;
     }
 
 [class*="cell-value-"] {
     color: black;
-    font-size: 4rem;
-    line-height: 5rem;
+    font-size: 3.6rem;
+    line-height: 4.5rem;
     position: absolute;
     top: 0;
     left: 0;
@@ -69,8 +69,8 @@
     height: 100%;
     color: black;
     background-color: white;
-    font-size: 4rem;
-    line-height: 5rem;
+    font-size: 3.6rem;
+    line-height: 4.5rem;
     position: absolute;
     top: 0;
     left: 0;
