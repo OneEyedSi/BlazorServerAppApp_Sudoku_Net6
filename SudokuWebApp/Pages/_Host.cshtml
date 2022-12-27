@@ -12,12 +12,13 @@
     const timer = new Timer(50);
 
     function Timer(interval) {
-        var parent = this;
-        var startTime, expected, timerId, elapsedMilliseconds;
+        const parent = this;
+        let startTime, expected, timerId, elapsedMilliseconds = 0;
+        let isRunning = false;
         this.interval = interval;
 
         this.start = function() {
-            // If timer was running starts from scratch.
+            //alert("JS timer.start called");
             // Doesn't matter if timerId not set, won't throw an error, so can use it to start 
             // timer from scratch, or to restart it from 0 if already running.
             clearTimeout(timerId);
@@ -25,33 +26,51 @@
             startTime = Date.now();
             expected = startTime + this.interval;
             timerId = setTimeout(step, this.interval);
+            isRunning = true;
         }
 
         this.stop = function() {
+            //alert("JS timer.stop called");
+            if (!isRunning) {
+                return;
+            }
+            isRunning = false;
+
             clearTimeout(timerId);
         }
 
         this.resume = function() {
+            //alert("JS timer.resume called");
+            if (isRunning) {
+                return;
+            }
+            isRunning = true;
+
             startTime = Date.now() - elapsedMilliseconds;
             expected = startTime + this.interval;
             timerId = setTimeout(step, this.interval);
         }
 
         this.clear = function() {
-            clearTimeout(timerId);
+            //alert("JS timer.clear called");
+            if (isRunning) {
+                clearTimeout(timerId);
+            }
+            isRunning = false;
+
             elapsedMilliseconds = 0;
             displayTime(0);
         }
 
         function step() {
-             elapsedMilliseconds = Date.now() - startTime;
-             displayTime(elapsedMilliseconds);
+            elapsedMilliseconds = Date.now() - startTime;
+            displayTime(elapsedMilliseconds);
 
-             var drift = Date.now() - expected;
-             expected += parent.interval;
-             timerId = setTimeout(step, (parent.interval - drift));
+            let drift = Date.now() - expected;
+            expected += parent.interval;
+            timerId = setTimeout(step, (parent.interval - drift));
         }
-    }
+   }
 
     function displayTime(elapsedMilliseconds) {
         // Only want 2 decimal places hence divide milliseconds by 10.
@@ -85,14 +104,14 @@
         timer.stop();
     };
 
-    window.clearTimer = function() {
-        timer.clear();
-    };
-
     window.restartTimer = function() {
         // No difference between start and restart, both will reset the timer to 0 if it was 
         // already running.
         timer.start();
+    };
+
+    window.clearTimer = function() {
+        timer.clear();
     };
 
 </script>

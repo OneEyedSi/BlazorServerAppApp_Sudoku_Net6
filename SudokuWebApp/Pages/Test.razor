@@ -1,5 +1,6 @@
 ﻿@page "/test"
 @inject IJSRuntime JS
+@inject ILogger<Index> Logger
 
 <PageTitle>Test</PageTitle>
 
@@ -11,43 +12,49 @@
 </div>
 
 <div>
-    <button class="btn btn-success" @onclick="StartJsTimer">Start timer</button>
-    <button class="btn btn-success" @onclick="PauseJsTimer">Pause timer</button>
-    <button class="btn btn-success" @onclick="ResumeJsTimer">Resume timer</button>
-    <button class="btn btn-success" @onclick="RestartJsTimer">Restart timer</button>
-    <button class="btn btn-success" @onclick="StopJsTimer">Stop timer</button>
-    <button class="btn btn-success" @onclick="ClearJsTimer">Clear timer</button>
+    <button class="btn btn-success" @onclick="StartJsTimerAsync">Start timer</button>
+    <button class="btn btn-success" @onclick="PauseJsTimerAsync">Pause timer</button>
+    <button class="btn btn-success" @onclick="ResumeJsTimerAsync">Resume timer</button>
+    <button class="btn btn-success" @onclick="RestartJsTimerAsync">Restart timer</button>
+    <button class="btn btn-success" @onclick="StopJsTimerAsync">Stop timer</button>
+    <button class="btn btn-success" @onclick="ClearJsTimerAsync">Clear timer</button>
 </div>
 
 @code { 
 
-    private async Task StartJsTimer()
+    private async Task StartJsTimerAsync()
     {
+        Logger.LogDebug("Test StartJsTimerAsync executing...");
         await JS.InvokeVoidAsync("startTimer");
     }
 
-    private async Task PauseJsTimer()
+    private async Task PauseJsTimerAsync()
     {
+        Logger.LogDebug("Test PauseJsTimerAsync executing...");
         await JS.InvokeVoidAsync("pauseTimer");
     }
 
-    private async Task ResumeJsTimer()
+    private async Task ResumeJsTimerAsync()
     {
+        Logger.LogDebug("Test ResumeJsTimerAsync executing...");
         await JS.InvokeVoidAsync("resumeTimer");
     }
 
-    private async Task StopJsTimer()
+    private async Task StopJsTimerAsync()
     {
+        Logger.LogDebug("Test StopJsTimerAsync executing...");
         await JS.InvokeVoidAsync("stopTimer");
     }
 
-    private async Task ClearJsTimer()
+    private async Task ClearJsTimerAsync()
     {
+        Logger.LogDebug("Test ClearJsTimerAsync executing...");
         await JS.InvokeVoidAsync("clearTimer");
     }
 
-    private async Task RestartJsTimer()
+    private async Task RestartJsTimerAsync()
     {
+        Logger.LogDebug("Test RestartJsTimerAsync executing...");
         await JS.InvokeVoidAsync("restartTimer");
     }
 }
