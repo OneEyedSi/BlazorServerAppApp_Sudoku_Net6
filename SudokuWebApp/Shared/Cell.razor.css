@@ -18,6 +18,10 @@
     background-color: lemonchiffon;
 }
 
+.cellbackground-unique-possiblevalue-in-group {
+    background-color: peachpuff;
+}
+
 .cellbackground-game-completed {
     background-color: gold;
 }
@@ -41,6 +45,15 @@
         text-align: center;
         vertical-align: middle;
     }
+
+.possiblevalues-text {
+    color: black;
+}
+
+.possiblevalues-unique-in-group-text {
+    color: crimson;
+    font-weight: bolder;
+}
 
 [class*="cell-value-"] {
     color: black;

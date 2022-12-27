@@ -11,7 +11,7 @@ namespace SudokuClassLibrary
 {
     public class CellValueChangedEventArgs : EventArgs
     {
-        public CellValueChangedEventArgs(int? previousValue, int? newValue, 
+        public CellValueChangedEventArgs(int? previousValue, int? newValue,
             bool isReplayingHistory = false, bool possibleValuesChanged = false)
         {
             PreviousValue = previousValue;
@@ -62,6 +62,8 @@ namespace SudokuClassLibrary
 
         public List<CellGroup> ParentGroups { get; } = new();
 
+        public bool HasUniquePossibleValueInParentGroup => GetUniquePossibleValuesInParentGroups().Any();
+
         #endregion
 
         #region Methods ***************************************************************************
@@ -106,7 +108,7 @@ namespace SudokuClassLibrary
             {
                 ResetPossibleValues();
 
-                var eventArgs = 
+                var eventArgs =
                     new CellValueChangedEventArgs(previousValue, newValue, isReplayingHistory);
                 OnCellValueChanged(eventArgs);
             }
@@ -212,7 +214,7 @@ namespace SudokuClassLibrary
                 return true;
             }
 
-            foreach(var parentGroup in ParentGroups)
+            foreach (var parentGroup in ParentGroups)
             {
                 if (!parentGroup.GetAvailableValues().Contains(newValue.Value))
                 {
@@ -225,6 +227,49 @@ namespace SudokuClassLibrary
             return false;
         }
 
+        public IEnumerable<int> GetUniquePossibleValuesInParentGroups()
+        {
+            // Should be maximum of one possible value that is unique in any parent 
+            // group.  However, player may enter an incorrect value somewhere so it's 
+            // possible there is more than one.
+            List<int> uniquePossibleValuesInAGroup = new();
+            foreach (var parentGroup in ParentGroups)
+            {
+                var possibleValuesUniqueInGroup =
+                    GetThisCellPossibleValuesUniqueInGroup(parentGroup);
+                if (possibleValuesUniqueInGroup?.Any() ?? false)
+                {
+                    uniquePossibleValuesInAGroup.AddRange(possibleValuesUniqueInGroup);
+                }
+            }
+
+            return uniquePossibleValuesInAGroup.Distinct();
+        }
+
+        private IEnumerable<int>? GetThisCellPossibleValuesUniqueInGroup(CellGroup parentGroup)
+        {
+            if (!(parentGroup?.Cells?.Any() ?? false))
+            {
+                return new List<int>();
+            }
+
+            var uniquePossibleValuesInGroup = parentGroup.Cells
+                .Where(c => !c.HasValueSet)
+                .SelectMany(c => c.GetPossibleValuesList())
+                .GroupBy(pv => pv)
+                .Where(grp => grp.Count() == 1)
+                .Select(grp => grp.Key);
+
+            if (!uniquePossibleValuesInGroup.Any())
+            {
+                return new List<int>();
+            }
+
+            var thisCellPossibleValuesUniqueInGroup =
+                this.GetPossibleValuesList().Intersect(uniquePossibleValuesInGroup);
+            return thisCellPossibleValuesUniqueInGroup;
+        }
+
         private void ResetPossibleValues()
         {
             if (_possibleValues == null)
@@ -234,7 +279,7 @@ namespace SudokuClassLibrary
 
             bool setAllPossibleValues = !_value.HasValue;
 
-            for(int i = 1; i <= 9; i++)
+            for (int i = 1; i <= 9; i++)
             {
                 _possibleValues[i] = setAllPossibleValues || i == _value.Value;
             }
@@ -269,7 +314,7 @@ namespace SudokuClassLibrary
                     hashSet.IntersectWith(parentGroup.GetAvailableValues());
                 }
             }
-            
+
             // Should be illegal: No parent group.  But then what raised the event this method handled?
             if (hashSet == null)
             {
@@ -296,7 +341,7 @@ namespace SudokuClassLibrary
             if (refreshCellElement)
             {
                 var cellChangedEventArgs =
-                    new CellValueChangedEventArgs(previousValue: null, newValue: null, 
+                    new CellValueChangedEventArgs(previousValue: null, newValue: null,
                         possibleValuesChanged: true);
                 OnCellValueChanged(cellChangedEventArgs);
             }

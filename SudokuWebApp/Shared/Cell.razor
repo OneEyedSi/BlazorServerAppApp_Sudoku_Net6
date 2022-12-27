@@ -83,6 +83,13 @@
                 return "cellbackground-single-possiblevalue";
             }
 
+            if ((GameState?.HighlightUniquePossibleValueInGroup ?? false)
+                && (CellState?.HasUniquePossibleValueInParentGroup ?? false)
+                && !CellState.HasValueSet)
+            {
+                return "cellbackground-unique-possiblevalue-in-group";
+            }
+
             int parentSquareIndex = CellState?.GetParentSquareIndex() ?? -1;
 
             if (parentSquareIndex == -1)
@@ -202,6 +209,8 @@
     {
         string showClass = "show";
         string hideClass = "hide";
+        string normalTextClass = "possiblevalues-text";
+        string uniqueInGroupTextClass = "possiblevalues-unique-in-group-text";
 
         if (CellState == null)
         {
@@ -214,8 +223,26 @@
         }
 
         bool isPossible = CellState?.GetPossibleValuesDictionary()?[possibleValue] ?? true;
-        string pvClass = isPossible? showClass : hideClass;
-        return pvClass;
+        if (!isPossible)
+        {
+            return hideClass;
+        }
+
+        if ((GameState?.HighlightSinglePossibleValue ?? false)
+                && (CellState?.HasSinglePossibleValue ?? false)
+                && !CellState.HasValueSet)
+        {
+            return $"{normalTextClass} {showClass}";
+        }
+
+        if ((GameState?.HighlightUniquePossibleValueInGroup ?? false)
+            && (CellState?.HasUniquePossibleValueInParentGroup ?? false)
+            && (CellState?.GetUniquePossibleValuesInParentGroups()?.Contains(possibleValue) ?? false))
+        {
+            return $"{uniqueInGroupTextClass} {showClass}";
+        }
+
+        return $"{normalTextClass} {showClass}";
     }
 
     private void ShowInputBox()

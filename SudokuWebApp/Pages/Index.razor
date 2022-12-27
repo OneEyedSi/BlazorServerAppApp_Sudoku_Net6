@@ -124,7 +124,11 @@
                         <br/>
                         <input type="checkbox" class="checkbox-large" 
                         disabled=@AreOptionsDisabled @bind="GameState.HighlightSinglePossibleValue" />
-                        <label>Highlight squares with only one possible value</label>
+                            <label>Highlight squares with only one possible value in pale yellow</label>
+                            <br/>
+                            <input type="checkbox" class="checkbox-large" 
+                        disabled=@AreOptionsDisabled @bind="GameState.HighlightUniquePossibleValueInGroup" />
+                            <label>Highlight squares with possible value unique in row, column, square or diagonal in pale orange</label>
                     </div>
                 </div>
 
@@ -576,9 +580,13 @@
 
     private void EnqueueJsFunctionNameToExecute(string? jsFunctionName)
     {
-        // If configured to pre-render and call JS function too early, before OnAfterRender, then 
-        // throws an InvalidOperationException.  So queue up JS functions to call then, in   
-        // OnAfterRenderAsync, pop them off the queue and call them.
+        // If configured to prerender and call JS function too early, before OnAfterRender, Blazor 
+        // throws an InvalidOperationException: 
+        //  "JavaScript interop calls cannot be issued at this time. This is because the component 
+        //  is being statically rendered. When prerendering is enabled, JavaScript interop calls 
+        //  can only be performed during the OnAfterRenderAsync lifecycle method."
+        // So queue up JS functions to call then, in OnAfterRenderAsync, pop them off the queue 
+        // and call them.
 
         // Want to debounce: avoid queuing the same function multiple times.
         if (string.IsNullOrWhiteSpace(jsFunctionName)
