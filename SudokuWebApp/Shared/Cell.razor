@@ -46,17 +46,24 @@
     {
         get
         {
+            //Logger.LogDebug("Getting CellState for grid cell [{CellRow}, {CellColumn}]...",
+            //    CellRow, CellColumn);
             if (_cellState == null)
             {
                 if (GameState == null || GameState.GameGrid == null)
                 {
+                    Logger.LogDebug("CellState and grid are null.");
                     _cellState = null;
                 }
                 else
                 {
+                    Logger.LogDebug("CellState is null: Setting it to grid cell [{CellRow}, {CellColumn}]",
+                        CellRow, CellColumn);
                     _cellState = GameState.GameGrid.Cells[CellRow, CellColumn];
                 }
             }
+
+            Logger.LogDebug($"Getting CellState for grid cell [{CellRow}, {CellColumn}]: {(_cellState == null ? "null" : "reference")} returned.");
             return _cellState;
         }
     }
@@ -67,6 +74,8 @@
     {
         get
         {
+            Logger.LogDebug("Getting CellBackgroundClass...");
+
             if ((GameState?.HighlightSinglePossibleValue ?? false)
                 && (CellState?.HasSinglePossibleValue ?? false) 
                 && !CellState.HasValueSet)
@@ -116,12 +125,16 @@
     {
         get
         {
+            Logger.LogDebug("Getting cell [{CellRow}, {CellColumn}] value...", CellRow, CellColumn);
             return CellState?.GetValue();
         }
         set
         {
+            Logger.LogDebug("Setting cell [{CellRow}, {CellColumn}] value...", CellRow, CellColumn);
             if (CellState == null)
             {
+                Logger.LogDebug("Setting cell [{CellRow}, {CellColumn}] value: CellState not set.", 
+                    CellRow, CellColumn);
                 return;
             }
 
@@ -129,11 +142,15 @@
             if (_gameStatus != GameStatus.Initial && _gameStatus != GameStatus.Setup
                 && CellState.IsInitialValue)
             {
+                Logger.LogDebug("Cannot change value for cell [{CellRow}, {CellColumn}]: Cell has initial value and game is under way.", 
+                    CellRow, CellColumn);
                 return;
             }
 
             if (!CellState.IsValidValue(value, out string? errorMessage))
             {
+                Logger.LogDebug("Cannot set value for cell [{CellRow}, {CellColumn}]: {value} is invalid for this cell.",
+                    CellRow, CellColumn, value);
                 OnValueError.InvokeAsync(errorMessage);
                 return;
             }
@@ -142,15 +159,21 @@
 
             if (value == previousValue)
             {
+                Logger.LogDebug("Setting cell [{CellRow}, {CellColumn}] value: {value} has not changed.",
+                    CellRow, CellColumn, value);
                 return;
             }
 
             if (_gameStatus == GameStatus.Initial || _gameStatus == GameStatus.Setup)
             {
+                Logger.LogDebug("Setting cell [{CellRow}, {CellColumn}] initial value to {value}.",
+                    CellRow, CellColumn, value);
                 CellState.SetInitialValue(value);
             }
             else
             {
+                Logger.LogDebug("Setting cell [{CellRow}, {CellColumn}] value to {value}.",
+                    CellRow, CellColumn, value);
                 CellState.SetGameValue(value);
             }
         }
@@ -160,12 +183,18 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Logger.LogDebug("Cell [{CellRow}, {CellColumn}] OnAfterRenderAsync called...",
+            CellRow, CellColumn);
+
+        Logger.LogDebug($"Cell [{CellRow}, {CellColumn}] OnAfterRenderAsync: Running {_asyncActionsToRunAfterRender.Count} after render actions...");
         foreach (var asyncActionToRun in _asyncActionsToRunAfterRender.ToList())
         {
             await asyncActionToRun();
         }
         _asyncActionsToRunAfterRender.Clear();
 
+        Logger.LogDebug("Cell [{CellRow}, {CellColumn}] OnAfterRenderAsync: Calling base method.",
+            CellRow, CellColumn);
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -191,8 +220,12 @@
 
     private void ShowInputBox()
     {
+        Logger.LogDebug("Showing input box for cell [{CellRow}, {CellColumn}]...",
+            CellRow, CellColumn);
         if (CellState == null)
         {
+            Logger.LogDebug("Cannot show input box for cell [{CellRow}, {CellColumn}]: CellState not set.",
+                CellRow, CellColumn);
             return;
         }
 
@@ -200,15 +233,22 @@
         if (_gameStatus != GameStatus.Initial && _gameStatus != GameStatus.Setup
             && CellState.IsInitialValue)
         {
+            Logger.LogDebug("Cannot show input box for cell [{CellRow}, {CellColumn}]: Cell has an initial value which cannot be changed during game play.",
+                CellRow, CellColumn);
             return;
         }
-
         InputBoxIsVisible = true;
+
+        Logger.LogDebug("Showing input box for cell [{CellRow}, {CellColumn}]: Action to set focus to input box added to after render actions.",
+                CellRow, CellColumn);
         _asyncActionsToRunAfterRender.Add(() => InputBox.FocusAsync().AsTask());
     }
 
     private void HideInputBox()
     {
+        Logger.LogDebug("Hiding input box for cell [{CellRow}, {CellColumn}]...",
+                CellRow, CellColumn);
+
         InputBoxIsVisible = false;
     }
 }
