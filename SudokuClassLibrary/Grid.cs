@@ -58,10 +58,7 @@ namespace SudokuClassLibrary
             { 
                 foreach (var cell in this.Cells)
                 {
-                    // Can't set or clear a cell set to an initial value.
-                    // So ensure IsInitialValue is turned off before clearing the value.
-                    cell.IsInitialValue = false;
-                    cell.SetValue(null);
+                    cell.ResetValue();
                 }
 
                 if (this.IsKillerSudoku)
@@ -80,7 +77,7 @@ namespace SudokuClassLibrary
             var nonInitialCells = this.GetEnumerableCells().Where(c => !c.IsInitialValue);
             foreach(var cell in nonInitialCells)
             {
-                cell.SetValue(null);
+                cell.SetGameValue(null);
             }
         }
 

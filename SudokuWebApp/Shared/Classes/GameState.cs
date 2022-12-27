@@ -153,7 +153,7 @@ namespace SudokuWebApp.Shared.Classes
                     break;
                 case GameStatus.GameStart:
                 case GameStatus.Running:
-                    cell.SetValue(newCellValue, isReplayingHistory: true);
+                    cell.SetGameValue(newCellValue, isReplayingHistory: true);
                     break;
             }
         }

@@ -64,27 +64,37 @@ namespace SudokuClassLibrary
 
         #region Methods ***************************************************************************
 
-        public void SetInitialValue(int? value, bool isReplayingHistory = false)
-        {
-            // Must clear IsInitialValue because, if it were previously set, it would prevent Value 
-            // from being set.
-            IsInitialValue = false;
-            SetValue(value, isReplayingHistory);
-            IsInitialValue = value.HasValue;
-        }
-
         public int? GetValue()
         {
             return _value;
         }
 
-        public void SetValue(int? newValue, bool isReplayingHistory = false)
+        public void ResetValue()
         {
-            // Cannot change cell value if it was one of the initial values in the game.
-            if (IsInitialValue)
+            // Will also clear the IsInitialValue flag.
+            SetInitialValue(null);
+        }
+
+        public void SetInitialValue(int? newValue, bool isReplayingHistory = false)
+        {
+            SetValue(newValue, setAsInitialValue: true, isReplayingHistory);
+        }
+
+        public void SetGameValue(int? newValue, bool isReplayingHistory = false)
+        {
+            SetValue(newValue, setAsInitialValue: false, isReplayingHistory);
+        }
+
+        public void SetValue(int? newValue, bool setAsInitialValue = false, bool isReplayingHistory = false)
+        {
+            // Initial values are read-only during game: Cannot set cell value during game if it was
+            // previously set as an initial value.
+            if (!setAsInitialValue && IsInitialValue)
             {
                 return;
             }
+
+            IsInitialValue = setAsInitialValue && newValue.HasValue;
 
             IsValidValue(newValue);
             int? previousValue = _value;
@@ -98,11 +108,6 @@ namespace SudokuClassLibrary
                     new CellValueChangedEventArgs(previousValue, newValue, isReplayingHistory);
                 OnCellValueChanged(eventArgs);
             }
-        }
-
-        public void RemoveInitialValue()
-        {
-            SetInitialValue(null);
         }
 
         private Dictionary<int, bool> _possibleValues = new();

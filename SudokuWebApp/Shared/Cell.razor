@@ -1,4 +1,5 @@
 ﻿@using Library = SudokuClassLibrary
+@inject ILogger<Cell> Logger
 
 <div class="cell-container @CellBackgroundClass">
   <table class="possiblevalues-table">
@@ -149,11 +150,9 @@
                 CellState.SetInitialValue(value);
             }
             else
-            {                
-                CellState.SetValue(value);
+            {
+                CellState.SetGameValue(value);
             }
-
-            GameState?.RequestRefresh();
         }
     }
 
