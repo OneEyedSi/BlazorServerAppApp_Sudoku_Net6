@@ -264,6 +264,13 @@
                 CellRow, CellColumn);
             return;
         }
+
+        // All values are read-only during game pause.
+        if (_gameStatus == GameStatus.Paused)
+        {
+            return;
+        }
+
         InputBoxIsVisible = true;
 
         Logger.LogDebug("Showing input box for cell [{CellRow}, {CellColumn}]: Action to set focus to input box added to after render actions.",
