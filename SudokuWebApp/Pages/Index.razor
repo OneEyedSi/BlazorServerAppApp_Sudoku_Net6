@@ -189,8 +189,11 @@
 
     private async void RefreshMe()
     {
-        Logger.LogDebug("Executing Index RefreshMe...");
-        await InvokeAsync(() => StateHasChanged());
+        if (!IsRefreshDisabled)
+        {
+            Logger.LogDebug("Executing Index RefreshMe...");
+            await InvokeAsync(() => StateHasChanged());
+        }
     }
 
     private void GameState_StatusChanged(object? sender, GameStatusChangedEventArgs eventArgs)
@@ -275,7 +278,9 @@
     private string GameTitle => (GameState?.IsKillerSudoku ?? false) ? "Killer Sudoku!" : "Sudoku!";
     private bool IsKillerSudokuDisabled => (GameState.Status != GameStatus.Initial
                                         && GameState.Status != GameStatus.Setup);
-    private bool AreOptionsDisabled => (GameState.Status == GameStatus.AfterEnd);
+    private bool AreOptionsDisabled => (GameState.Status == GameStatus.Completed
+                                        || GameState.Status == GameStatus.AfterEnd);
+    private bool IsRefreshDisabled { get; set; } = false;
 
     #endregion
 
@@ -433,7 +438,8 @@
             GameState.Status = GameStatus.Initial;
         };
 
-        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation, 
+            disableRefreshDuringAction: true);
     }
 
     private async Task RestartGameAsync()
@@ -448,7 +454,8 @@
             GameState.Status = GameStatus.GameStart;
         };
 
-        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation,
+            disableRefreshDuringAction: true);
     }
 
     private async Task NewGameAsync()
@@ -463,10 +470,12 @@
             GameState.Status = GameStatus.Initial;
         };
 
-        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation);
+        await ActWithConfirmationAsync(dialogMessage, actionOnConfirmation,
+            disableRefreshDuringAction: true);
     }
 
-    private async Task ActWithConfirmationAsync(string dialogMessage, Action actionOnConfirmation)
+    private async Task ActWithConfirmationAsync(string dialogMessage, Action actionOnConfirmation, 
+        bool disableRefreshDuringAction = false)
     {
         Logger.LogDebug("Index ActWithConfirmationAsync executing...");
 
@@ -483,7 +492,19 @@
         if (result == DialogResult.Ok)
         {
             Logger.LogDebug("Index ActWithConfirmationAsync: User confirmed they are sure; performing action...");
+            
+            if (disableRefreshDuringAction)
+            {
+                IsRefreshDisabled = true;
+            }
+
             actionOnConfirmation();
+            
+            if (disableRefreshDuringAction)
+            {
+                IsRefreshDisabled = false;
+                RefreshMe();
+            }
         }
         else
         {
