@@ -12,15 +12,17 @@ namespace SudokuClassLibrary
     public class CellValueChangedEventArgs : EventArgs
     {
         public CellValueChangedEventArgs(int? previousValue, int? newValue, 
-            bool isReplayingHistory = false)
+            bool isReplayingHistory = false, bool possibleValuesChanged = false)
         {
             PreviousValue = previousValue;
             NewValue = newValue;
             IsReplayingHistory = isReplayingHistory;
+            PossibleValuesChanged = possibleValuesChanged;
         }
         public int? PreviousValue { get; set; }
         public int? NewValue { get; set; }
         public bool IsReplayingHistory { get; set; }
+        public bool PossibleValuesChanged { get; set; }
     }
 
     public class Cell
@@ -274,9 +276,29 @@ namespace SudokuClassLibrary
                 _possibleValues = new();
             }
 
+            bool refreshCellElement = false;
+
             for (int i = 1; i <= 9; i++)
             {
+                // To start with all possible values are true.  So if not previously set, default
+                // to true.
+                if (!_possibleValues.TryGetValue(i, out bool previousValue))
+                {
+                    previousValue = true;
+                }
                 _possibleValues[i] = hashSet == null || hashSet.Contains(i);
+                if (_possibleValues[i] != previousValue)
+                {
+                    refreshCellElement = true;
+                }
+            }
+
+            if (refreshCellElement)
+            {
+                var cellChangedEventArgs =
+                    new CellValueChangedEventArgs(previousValue: null, newValue: null, 
+                        possibleValuesChanged: true);
+                OnCellValueChanged(cellChangedEventArgs);
             }
         }
 

@@ -141,7 +141,10 @@ namespace SudokuClassLibrary
 
         private void Cell_CellValueChanged(object? sender, CellValueChangedEventArgs eventArgs)
         {
-            RecalculateAvailableValues();
+            if (eventArgs.PreviousValue != eventArgs.NewValue)
+            {
+                RecalculateAvailableValues();
+            }
         }
 
         #endregion

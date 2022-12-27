@@ -197,19 +197,19 @@ namespace SudokuWebApp.Shared.Classes
             // previously assume they want to keep it until they manually clear it.
             GameGrid.ResetGame();
             History.Clear();
-            // Want to clear the grid and history but then move status to Setup.
             Status = GameStatus.Setup;
         }
 
         private void OnGameStartStatusSet()
         {
+            // Want to clear any game values (but not initial values) and the history but then
+            // move status to Running.
+
             _logger.LogDebug("GameState OnGameStartStatusSet called: Restarting game and clearing History.");
             GameGrid.RestartGame();
             // When start game clear history because don't want user to be able to undo setting 
             // of initial values while game is running.
             History.Clear();
-            // Want to clear any game values (but not initial values) and the history but then
-            // move status to Running.
             Status = GameStatus.Running;
         }
 
@@ -242,7 +242,7 @@ namespace SudokuWebApp.Shared.Classes
 
             // If replaying history don't want to add it to the history - end up toggling between
             // Undo and Redo otherwise.
-            if (!eventArgs.IsReplayingHistory)
+            if (!eventArgs.IsReplayingHistory && eventArgs.PreviousValue != eventArgs.NewValue)
             {
                 _logger.LogDebug("GameState Cell_CellValueChanged: Recording change in History.");
                 Sudoku.Position changedCellPosition = changedCell.Position;
@@ -259,6 +259,11 @@ namespace SudokuWebApp.Shared.Classes
             else if (_status == GameStatus.Running && GameGrid.GameIsComplete)
             {
                 Status = GameStatus.Completed;
+            }
+
+            if (eventArgs.PossibleValuesChanged)
+            {
+                RequestRefresh();
             }
         }
     }
