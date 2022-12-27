@@ -66,8 +66,9 @@ namespace SudokuWebApp.Shared.Classes
                 _statusHistoryStack.Push(previousStatus);
             }
 
-            // If status is Running, need to call OnStatusChanged to change status to Completed, 
-            // if appropriate.
+            // If status is Running, need to call OnStatusChanged to check if game has completed
+            // and, if so, update status to Completed.  Otherwise, call OnStatusChanged if
+            // status has changed.
             if (_status == GameStatus.Running || _status != previousStatus)
             {
                 _logger.LogDebug("Setting game Status: Calling OnStatusChanged()...");
@@ -249,11 +250,15 @@ namespace SudokuWebApp.Shared.Classes
                 History.AddChange(changeDetails);
             }
 
-            // Move to new statuses if game conditions have changed.
-            if ((_status == GameStatus.Initial && GameGrid.HasInitialValue) 
-                || (_status == GameStatus.Running && GameGrid.GameIsComplete))
+            // Set a cell value during the Initial state: Move to Setup state.
+            if (_status == GameStatus.Initial && eventArgs.NewValue != null)
             {
-                OnStatusChanged();
+                Status = GameStatus.Setup;
+            }
+            // If setting the cell value completed the game, change the status.
+            else if (_status == GameStatus.Running && GameGrid.GameIsComplete)
+            {
+                Status = GameStatus.Completed;
             }
         }
     }
