@@ -195,7 +195,7 @@
         if (GameState.GameIsComplete)
         {
             Logger.LogDebug("Index RefreshMe: Game is complete.");
-            ShowCongratulations();
+            //ShowCongratulations();
         }
     }
 
@@ -235,13 +235,14 @@
     private async Task OnInitialStatusSet()
     {
         Logger.LogDebug("Index OnInitialStatusSet executing...");
-        await ClearJsTimerAndLeaveStoppedAsync();
-        //EnqueueJsFunctionNameToExecute("clearTimer");
+        FormatPauseButton();
+        EnqueueJsFunctionNameToExecute("clearTimer");
     }
 
     private async Task OnGameStartStatusSet()
     {
         Logger.LogDebug("Index OnGameStartStatusSet executing...");
+        FormatPauseButton();
         //await ClearAndRestartJsTimerAsync();
         EnqueueJsFunctionNameToExecute("restartTimer");
     }
@@ -265,8 +266,10 @@
     private async Task OnCompletedStatusSet()
     {
         Logger.LogDebug("Index OnCompletedStatusSet executing...");
-        await StopJsTimerAsync();
-        //EnqueueJsFunctionNameToExecute("stopTimer");
+        //await StopJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("stopTimer");
+        ShowCongratulations();
+        GameState.Status = GameStatus.AfterEnd;
     }
 
     private async Task OnModalDialogOpenSet()
@@ -283,7 +286,7 @@
     private string GameTitle => (GameState?.IsKillerSudoku ?? false) ? "Killer Sudoku!" : "Sudoku!";
     private bool IsKillerSudokuDisabled => (GameState.Status != GameStatus.Initial
                                         && GameState.Status != GameStatus.Setup);
-    private bool AreOptionsDisabled => (GameState.Status == GameStatus.Completed);
+    private bool AreOptionsDisabled => (GameState.Status == GameStatus.AfterEnd);
 
     #endregion
 
@@ -331,6 +334,7 @@
                 return (button != Button.PauseContinue && button != Button.RestartGame 
                     && button != Button.NewGame);
             case GameStatus.Completed:
+            case GameStatus.AfterEnd:
                 return (button != Button.RestartGame && button != Button.NewGame);
             case GameStatus.ModalDialogOpen:
                 return true;
@@ -352,6 +356,7 @@
             case GameStatus.Running:
             case GameStatus.Paused:
             case GameStatus.Completed:
+            case GameStatus.AfterEnd:
             case GameStatus.ModalDialogOpen:
                 return (buttonGroup != ButtonGroup.Setup);
             default:
@@ -378,7 +383,7 @@
     private async Task StartGameAsync()
     {
         Logger.LogDebug("Index StartGame executing...");
-        await StartJsTimerAsync();
+        EnqueueJsFunctionNameToExecute("startTimer");
         GameState.Status = GameStatus.GameStart;
     }
 
@@ -392,8 +397,7 @@
             //await PauseJsTimerAsync();
             //_jsFunctionsToExecute.Enqueue("pauseTimer");
             EnqueueJsFunctionNameToExecute("pauseTimer");
-            _pauseContinueButtonText = "Continue";
-            _pauseContinueButtonClass = "btn btn-primary";
+            FormatContinueButton();
             PauseGame();
         }
         else if (GameState.Status == GameStatus.Paused)
@@ -401,8 +405,7 @@
             Logger.LogDebug("Index TogglePauseGame: Resuming game...");
             //await ResumeJsTimerAsync();
             EnqueueJsFunctionNameToExecute("resumeTimer");
-            _pauseContinueButtonText = "Pause";
-            _pauseContinueButtonClass = "btn btn-info";
+            FormatPauseButton();
             ContinueGame();
         }
     }
@@ -439,6 +442,7 @@
         string dialogMessage = "Are you sure you want to restart the game?";
         Action actionOnConfirmation = () =>
         {
+            FormatPauseButton();
             EnqueueJsFunctionNameToExecute("restartTimer");
             GameState.Status = GameStatus.GameStart;
         };
@@ -453,6 +457,7 @@
         string dialogMessage = "Are you sure you want to cancel this game and start a new one?";
         Action actionOnConfirmation = () =>
         {
+            FormatPauseButton();
             EnqueueJsFunctionNameToExecute("clearTimer");
             GameState.Status = GameStatus.Initial;
         };
@@ -487,6 +492,18 @@
             // If dialog cancelled return to the previous game state.
             GameState.ResetToPreviousStatus();
         }
+    }
+
+    private void FormatPauseButton()
+    {
+        _pauseContinueButtonText = "Pause";
+        _pauseContinueButtonClass = "btn btn-info";
+    }
+
+    private void FormatContinueButton()
+    {
+        _pauseContinueButtonText = "Continue";
+        _pauseContinueButtonClass = "btn btn-primary";
     }
 
     #endregion

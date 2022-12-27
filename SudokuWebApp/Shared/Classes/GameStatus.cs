@@ -9,6 +9,7 @@
         Running,
         Paused,
         Completed, 
+        AfterEnd, 
         ModalDialogOpen
     }
 }
