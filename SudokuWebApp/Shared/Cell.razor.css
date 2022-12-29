@@ -55,6 +55,11 @@
     font-weight: bolder;
 }
 
+.possiblevalues-not-unique-in-group-text {
+    color: black;
+    opacity: 0.5;
+}
+
 [class*="cell-value-"] {
     color: black;
     font-size: 3.6rem;

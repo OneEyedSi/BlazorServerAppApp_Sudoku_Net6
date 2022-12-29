@@ -211,6 +211,7 @@
         string hideClass = "hide";
         string normalTextClass = "possiblevalues-text";
         string uniqueInGroupTextClass = "possiblevalues-unique-in-group-text";
+        string notUniqueInGroupTextClass = "possiblevalues-not-unique-in-group-text";
 
         if (CellState == null)
         {
@@ -236,10 +237,14 @@
         }
 
         if ((GameState?.HighlightUniquePossibleValueInGroup ?? false)
-            && (CellState?.HasUniquePossibleValueInParentGroup ?? false)
-            && (CellState?.GetUniquePossibleValuesInParentGroups()?.Contains(possibleValue) ?? false))
+            && (CellState?.HasUniquePossibleValueInParentGroup ?? false))
         {
-            return $"{uniqueInGroupTextClass} {showClass}";
+            string textClass = notUniqueInGroupTextClass;
+            if (CellState?.GetUniquePossibleValuesInParentGroups()?.Contains(possibleValue) ?? false)
+            {
+                textClass = uniqueInGroupTextClass;
+            }
+            return $"{textClass} {showClass}";
         }
 
         return $"{normalTextClass} {showClass}";
