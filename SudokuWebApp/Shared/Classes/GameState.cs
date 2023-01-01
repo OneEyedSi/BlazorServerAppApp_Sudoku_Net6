@@ -1,7 +1,6 @@
-﻿using Sudoku = SudokuClassLibrary;
+﻿using classlib = SudokuClassLibrary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using SudokuClassLibrary;
 using SudokuWebApp.Shared.Classes;
 
 namespace SudokuWebApp.Shared.Classes
@@ -32,9 +31,9 @@ namespace SudokuWebApp.Shared.Classes
             }
         }
 
-        public Sudoku.Grid GameGrid { get; } = new();
+        public classlib.Grid GameGrid { get; } = new();
 
-        public Sudoku.History History { get; } = new();
+        public classlib.History History { get; } = new();
 
         private Stack<GameStatus> _statusHistoryStack = new();
         private GameStatus _status = GameStatus.Initial;
@@ -134,7 +133,7 @@ namespace SudokuWebApp.Shared.Classes
         {
             _logger.LogDebug($"{(isUndo ? "Undo" : "Redo")}ing change...");
 
-            HistoryValue? changeDetails = isUndo 
+            classlib.HistoryValue? changeDetails = isUndo 
                                             ? History.GetPreviousChange() 
                                             : History.GetNextChange();
             if (changeDetails == null)
@@ -229,13 +228,13 @@ namespace SudokuWebApp.Shared.Classes
             History.Clear();
         }
 
-        private void Cell_CellValueChanged(object? sender, Sudoku.CellValueChangedEventArgs eventArgs)
+        private void Cell_CellValueChanged(object? sender, classlib.CellValueChangedEventArgs eventArgs)
         {
             _logger.LogDebug("GameState Cell_CellValueChanged called...");
 
             // Should be illegal - this method should only run on CellValueChanged event for a
             // cell.
-            if (sender is not Sudoku.Cell changedCell)
+            if (sender is not classlib.Cell changedCell)
             {
                 _logger.LogDebug("GameState Cell_CellValueChanged called but no changedCell set.");
                 return;
@@ -246,8 +245,8 @@ namespace SudokuWebApp.Shared.Classes
             if (!eventArgs.IsReplayingHistory && eventArgs.PreviousValue != eventArgs.NewValue)
             {
                 _logger.LogDebug("GameState Cell_CellValueChanged: Recording change in History.");
-                Sudoku.Position changedCellPosition = changedCell.Position;
-                HistoryValue changeDetails = new(changedCellPosition, eventArgs.PreviousValue, eventArgs.NewValue);
+                classlib.Position changedCellPosition = changedCell.Position;
+                classlib.HistoryValue changeDetails = new(changedCellPosition, eventArgs.PreviousValue, eventArgs.NewValue);
                 History.AddChange(changeDetails);
             }
 

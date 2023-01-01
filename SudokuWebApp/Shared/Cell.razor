@@ -1,4 +1,4 @@
-﻿@using Library = SudokuClassLibrary
+﻿@using classlib = SudokuClassLibrary
 @inject ILogger<Cell> Logger
 
 <div class="cell-container @CellBackgroundClass">
@@ -41,8 +41,8 @@
     [Parameter]
     public EventCallback<string> OnValueError { get; set; }
 
-    private Library.Cell? _cellState;
-    private Library.Cell? CellState
+    private classlib.Cell? _cellState;
+    private classlib.Cell? CellState
     {
         get
         {
