@@ -27,8 +27,8 @@ Log.Logger = new LoggerConfiguration()
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSingleton<GameState>();
+builder.Services.AddScoped<WeatherForecastService>();
+builder.Services.AddScoped<GameState>();
 builder.Services.AddDbContextFactory<DataContext>(options => 
     options.UseSqlite("Data Source=Data/Games.db"));
 
