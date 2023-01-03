@@ -27,23 +27,29 @@ namespace SudokuWebApp.Shared.Classes
         public GameState(IUserProfileService userProfileService, ILogger<GameState> logger)
         {
             _userProfileService = userProfileService;
+            _userProfileService.ProfileListUpdated += UserProfileListUpdated;
             _logger = logger;
             _logger.LogInformation("Initializing GameState.");
             foreach (var cell in GameGrid.GetEnumerableCells())
             {
                 cell.CellValueChanged += Cell_CellValueChanged;
             }
-            _userProfile = _userProfileService?.GetDefaultUserProfile();
+            UserProfile = _userProfileService?.GetDefaultUserProfile();
+            AllUserProfiles = _userProfileService?.GetAllUserProfiles();
         }
 
         public classlib.Grid GameGrid { get; } = new();
 
-        private UserProfile? _userProfile;
-        public UserProfile? UserProfile
+        public UserProfile? UserProfile { get; set; }
+
+        public IEnumerable<UserProfile>? AllUserProfiles { get; private set; }
+
+        private void UserProfileListUpdated()
         {
-            get { return _userProfile; }
-            set { _userProfile = value; }
+            AllUserProfiles = _userProfileService?.GetAllUserProfiles();
         }
+
+        public bool IsProfilePanelVisible { get; set; } = false;
 
         public classlib.History History { get; } = new();
 

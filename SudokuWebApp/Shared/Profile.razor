@@ -1,7 +1,4 @@
-﻿@using classlib = SudokuClassLibrary
-@using dataServices = SudokuClassLibrary.DataServices
-@inject dataServices.IUserProfileService userProfileService
-@inject GameState GameState
+﻿@inject GameState GameState
 
 @if (GameState?.UserProfile == null)
     {
@@ -11,12 +8,33 @@
     {   
         <div class="profile">
             <img src=@GameState?.UserProfile?.Icon?.Path />
-            <span>@GameState?.UserProfile?.Name</span>
-            <span class="oi oi-caret-bottom profile-arrow" aria-hidden="true" />
+            <span @onclick=@TogglePanel>@GameState?.UserProfile?.Name</span>
+            <span class="oi @ArrowClass profile-arrow" aria-hidden="true" @onclick=@TogglePanel />
         </div>
     }
 
 @code {
-    private string IconPath = "img/1669707620smiley-classic-icon_grey.svg";
-    private string Name = "Guest";
+
+    private void TogglePanel()
+    {
+        if (GameState == null)
+        {
+            return;
+        }
+
+        GameState.IsProfilePanelVisible = !GameState.IsProfilePanelVisible;
+        GameState.RequestRefresh();
+    }
+
+    private string ArrowClass
+    {
+        get
+        {
+            if ((GameState?.IsProfilePanelVisible ?? false) == true)
+            {
+                return "oi-caret-top";
+            }
+            return "oi-caret-bottom";
+        }
+    }
 }

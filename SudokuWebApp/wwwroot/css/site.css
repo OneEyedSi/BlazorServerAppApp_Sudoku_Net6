@@ -70,20 +70,6 @@ a, .btn-link {
     padding: 1.5rem !important;
 }
 
-.profile {
-    font-family: 'Bahnschrift', Arial, Helvetica, sans-serif;
-    vertical-align: top;
-}
-
-    .profile img {
-        width: 2.5rem;
-        height: 2.5rem;
-    }
-
-.profile-arrow {
-    vertical-align: text-bottom;
-}
-
 .game-title {
     padding-left: 0.8rem !important;
     padding-right: 0.8rem !important;
@@ -115,22 +101,6 @@ a, .btn-link {
     background-color: #DDD;
     color: black;
 }
-
-.killer-container {
-    font-size: 1.2rem;
-    padding: 0.8rem 0.8rem;
-    margin: 0;
-    background-color: #999;
-    color: white;
-}
-
-    .killer-container label {
-        vertical-align: middle;
-    }
-
-    .killer-container input {
-        vertical-align: middle;
-    }
 
 .options-container {
     font-size: 1.2rem;

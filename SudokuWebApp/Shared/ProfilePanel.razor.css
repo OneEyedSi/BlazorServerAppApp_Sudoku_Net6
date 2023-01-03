@@ -1,0 +1,22 @@
+﻿.profile-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f7f7;
+    position: absolute;
+    top: 3.5rem;
+    right: 0;
+    z-index: 2000;
+    padding: 0.8rem !important;
+    border-left: 1px solid #d6d5d5;
+    border-right: 1px solid #d6d5d5;
+    border-bottom: 1px solid #d6d5d5;
+}
+
+    .profile-panel-image {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .profile-panel-cmd {
+        padding-left: 0.3rem !important;
+    }

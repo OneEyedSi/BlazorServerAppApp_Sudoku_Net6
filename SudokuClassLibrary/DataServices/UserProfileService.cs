@@ -11,6 +11,8 @@ namespace SudokuClassLibrary.DataServices
 {
     public class UserProfileService : IUserProfileService
     {
+        public event Action? ProfileListUpdated;
+
         private readonly IDbContextFactory<DataContext> _dbContextFactory;
         public UserProfileService(IDbContextFactory<DataContext> dbContextFactory)
         {
@@ -37,6 +39,20 @@ namespace SudokuClassLibrary.DataServices
                 .FirstOrDefault(up => up.UserProfileId == userProfileId);
         }
 
+        public IEnumerable<UserProfile>? GetAllUserProfiles()
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+
+            if (dbContext == null)
+            {
+                return null;
+            }
+
+            return dbContext.UserProfiles
+                .Include(up => up.Icon)
+                .ToList();
+        }
+
         public async Task<int?> AddOrUpdateUserProfileAsync(int userProfileId, string name, int iconId)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
@@ -51,6 +67,7 @@ namespace SudokuClassLibrary.DataServices
             // Update will create the record if the Id field is not set (ie is 0).
             dbContext.Update(userProfile);
             await dbContext.SaveChangesAsync();
+            OnProfileListUpdated();
             return userProfile.UserProfileId;
         }
 
@@ -71,7 +88,13 @@ namespace SudokuClassLibrary.DataServices
 
             dbContext.Remove(userProfile);
             await dbContext.SaveChangesAsync();
+            OnProfileListUpdated();
             return true;
+        }
+
+        private void OnProfileListUpdated()
+        {
+            ProfileListUpdated?.Invoke();
         }
     }
 }

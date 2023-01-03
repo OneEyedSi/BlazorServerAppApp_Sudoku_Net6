@@ -1,0 +1,61 @@
+﻿@using classlib = SudokuClassLibrary
+@using dataServices = SudokuClassLibrary.DataServices
+@inject dataServices.IUserProfileService userProfileService
+@inject GameState GameState
+
+<div class="profile-panel @ShowPanelClass">
+    @if (GameState != null)
+    {
+        @foreach (var profile in GameState.AllUserProfiles)
+        {
+            <div>
+                <img src=@profile.Icon.Path class="profile-panel-image"/>
+                <span>@profile.Name</span>
+            </div>
+        }
+    }
+    <div class="profile-panel-cmd">
+        <span class="oi oi-pencil" aria-hidden="true" />
+        <span class="profile-panel-text">Edit @CurrentProfileName profile</span>
+    </div>
+    <div class="profile-panel-cmd">
+        <span class="oi oi-minus" aria-hidden="true" />
+        <span class="profile-panel-text">Remove @CurrentProfileName profile</span>
+    </div>
+    <div class="profile-panel-cmd">
+        <span class="oi oi-plus" aria-hidden="true" />
+        <span class="profile-panel-text">New profile</span>
+    </div>
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        GameState.RefreshRequested += RefreshMe;
+    }
+
+    public void Dispose()
+    {
+        GameState.RefreshRequested -= RefreshMe;
+    }
+
+    private string ShowPanelClass
+    {
+        get
+        {
+            if ((GameState?.IsProfilePanelVisible ?? false) == true)
+            {
+                return "show";
+            }
+            return "hide";
+        }
+    }
+
+    private string? CurrentProfileName => GameState?.UserProfile?.Name;
+
+    private async void RefreshMe()
+    {
+        await InvokeAsync(() => StateHasChanged());
+    }
+}
