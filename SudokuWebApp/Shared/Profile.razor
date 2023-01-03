@@ -1,0 +1,22 @@
+﻿@using classlib = SudokuClassLibrary
+@using dataServices = SudokuClassLibrary.DataServices
+@inject dataServices.IUserProfileService userProfileService
+@inject GameState GameState
+
+@if (GameState?.UserProfile == null)
+    {
+        <span>Initializing ...</span>
+    }
+    else
+    {   
+        <div class="profile">
+            <img src=@GameState?.UserProfile?.Icon?.Path />
+            <span>@GameState?.UserProfile?.Name</span>
+            <span class="oi oi-caret-bottom profile-arrow" aria-hidden="true" />
+        </div>
+    }
+
+@code {
+    private string IconPath = "img/1669707620smiley-classic-icon_grey.svg";
+    private string Name = "Guest";
+}

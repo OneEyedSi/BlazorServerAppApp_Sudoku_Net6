@@ -70,6 +70,20 @@ a, .btn-link {
     padding: 1.5rem !important;
 }
 
+.profile {
+    font-family: 'Bahnschrift', Arial, Helvetica, sans-serif;
+    vertical-align: top;
+}
+
+    .profile img {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+.profile-arrow {
+    vertical-align: text-bottom;
+}
+
 .game-title {
     padding-left: 0.8rem !important;
     padding-right: 0.8rem !important;
