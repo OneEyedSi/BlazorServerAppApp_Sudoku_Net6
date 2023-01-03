@@ -1,7 +1,9 @@
 ﻿using classlib = SudokuClassLibrary;
+using SudokuDataAccess.Models;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using SudokuWebApp.Shared.Classes;
+using SudokuClassLibrary.DataServices;
 
 namespace SudokuWebApp.Shared.Classes
 {
@@ -20,18 +22,28 @@ namespace SudokuWebApp.Shared.Classes
         public event EventHandler<GameStatusChangedEventArgs>? StatusChanged;
 
         private ILogger _logger;
+        private readonly IUserProfileService _userProfileService;
 
-        public GameState(ILogger<GameState> logger)
+        public GameState(IUserProfileService userProfileService, ILogger<GameState> logger)
         {
+            _userProfileService = userProfileService;
             _logger = logger;
             _logger.LogInformation("Initializing GameState.");
             foreach (var cell in GameGrid.GetEnumerableCells())
             {
                 cell.CellValueChanged += Cell_CellValueChanged;
             }
+            _userProfile = _userProfileService?.GetDefaultUserProfile();
         }
 
         public classlib.Grid GameGrid { get; } = new();
+
+        private UserProfile? _userProfile;
+        public UserProfile? UserProfile
+        {
+            get { return _userProfile; }
+            set { _userProfile = value; }
+        }
 
         public classlib.History History { get; } = new();
 

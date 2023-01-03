@@ -9,6 +9,7 @@ using Serilog.Exceptions;
 using Microsoft.Extensions.Configuration;
 using SudokuDataAccess;
 using Microsoft.EntityFrameworkCore;
+using SudokuClassLibrary.DataServices;
 
 // This configures the app to read configuration from, amongst other sources,
 // appsettings.{environment}.json  and appsettings.json.
@@ -31,6 +32,7 @@ builder.Services.AddScoped<WeatherForecastService>();
 builder.Services.AddScoped<GameState>();
 builder.Services.AddDbContextFactory<DataContext>(options => 
     options.UseSqlite("Data Source=Data/Games.db"));
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 // Replace the built-in ASP.NET Core logger.
 builder.Host.UseSerilog();
