@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace SudokuDataAccess.Models
 {
-    public class Game
+    public class UserGame
     {
-        public int GameId { get; set; }
-        public string Title { get; set; }
-        public DateTime TimeRecorded { get; set; }
+        public int UserGameId { get; set; }
 
         #region Parents ***************************************************************************
 

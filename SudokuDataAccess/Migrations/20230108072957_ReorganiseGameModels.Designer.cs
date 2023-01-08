@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SudokuDataAccess;
 
@@ -10,9 +11,11 @@ using SudokuDataAccess;
 namespace SudokuDataAccess.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230108072957_ReorganiseGameModels")]
+    partial class ReorganiseGameModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.1");
@@ -32,7 +35,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasKey("GameBoardId");
 
-                    b.ToTable("GameBoards", (string)null);
+                    b.ToTable("GameBoards");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.GameBoardValue", b =>
@@ -56,7 +59,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("GameBoardValues", (string)null);
+                    b.ToTable("GameBoardValues");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.GameRun", b =>
@@ -84,7 +87,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("UserGameId");
 
-                    b.ToTable("GameRuns", (string)null);
+                    b.ToTable("GameRuns");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.GameRunHistoryEntry", b =>
@@ -111,7 +114,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("GameRunHistoryEntry", (string)null);
+                    b.ToTable("GameRunHistoryEntry");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.GameRunOption", b =>
@@ -135,7 +138,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("OptionId");
 
-                    b.ToTable("GameRunOptions", (string)null);
+                    b.ToTable("GameRunOptions");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.GameRunValue", b =>
@@ -159,7 +162,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("GameRunValues", (string)null);
+                    b.ToTable("GameRunValues");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.Reference.Icon", b =>
@@ -178,7 +181,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasKey("IconId");
 
-                    b.ToTable("Icons", (string)null);
+                    b.ToTable("Icons");
 
                     b.HasData(
                         new
@@ -247,7 +250,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasKey("OptionId");
 
-                    b.ToTable("Options", (string)null);
+                    b.ToTable("Options");
 
                     b.HasData(
                         new
@@ -284,7 +287,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasKey("PositionId");
 
-                    b.ToTable("Positions", (string)null);
+                    b.ToTable("Positions");
 
                     b.HasData(
                         new
@@ -793,7 +796,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("UserProfileId");
 
-                    b.ToTable("UserGames", (string)null);
+                    b.ToTable("UserGames");
                 });
 
             modelBuilder.Entity("SudokuDataAccess.Models.UserProfile", b =>
@@ -814,7 +817,7 @@ namespace SudokuDataAccess.Migrations
 
                     b.HasIndex("IconId");
 
-                    b.ToTable("UserProfiles", (string)null);
+                    b.ToTable("UserProfiles");
 
                     b.HasData(
                         new

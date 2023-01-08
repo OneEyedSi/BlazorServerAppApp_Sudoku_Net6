@@ -53,7 +53,7 @@ namespace SudokuDataAccess
 
         #region User Game Entities ****************************************************************
 
-        public DbSet<Game> Games { get; set; }
+        public DbSet<UserGame> UserGames { get; set; }
         public DbSet<GameRun> GameRuns { get; set; }
         public DbSet<GameRunOption> GameRunOptions { get; set; }
         public DbSet<GameRunValue> GameRunValues { get; set; }

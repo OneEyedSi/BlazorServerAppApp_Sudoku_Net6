@@ -14,7 +14,7 @@ namespace SudokuDataAccess.Models
 
         #region Children **************************************************************************
 
-        public List<Game> Games { get; set; }
+        public List<UserGame> UserGames { get; set; }
         public List<GameBoardValue> Values { get; set; }
 
         #endregion

@@ -10,15 +10,15 @@ namespace SudokuDataAccess.Models
     public class GameRun
     {
         public int GameRunId { get; set; }
-        public string Title { get; set; }
+        public int RunNumber { get; set; }
         public DateTime TimeRecorded { get; set; }
         public long? MillisecondsTaken { get; set; }
         public bool WasCompleted { get; set; }
 
         #region Parents ***************************************************************************
 
-        public int GameId { get; set; }
-        public Game? Game { get; set; }
+        public int UserGameId { get; set; }
+        public UserGame? Game { get; set; }
 
         #endregion
 
