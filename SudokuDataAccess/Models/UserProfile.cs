@@ -1,11 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using SudokuDataAccess.Models.Reference;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace SudokuDataAccess.Models
 {
@@ -15,10 +11,13 @@ namespace SudokuDataAccess.Models
         public const int DefaultId = 1;
 
         public int UserProfileId { get; set; }
+
+        [Required(ErrorMessage = "Profile name is required.")]
         public string Name { get; set; }
 
         #region Parents ***************************************************************************
 
+        [Required(ErrorMessage = "An icon is required for the profile.")]
         public int? IconId { get; set; }
         public Icon? Icon { get; set; }
 

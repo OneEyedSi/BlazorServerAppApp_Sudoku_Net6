@@ -2,8 +2,10 @@
 using SudokuDataAccess.Models;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using SudokuWebApp.Data;
 using SudokuWebApp.Shared.Classes;
-using SudokuClassLibrary.DataServices;
+using SudokuClassLibrary;
+using SudokuDataAccess.Models.Reference;
 
 namespace SudokuWebApp.Shared.Classes
 {
@@ -23,18 +25,22 @@ namespace SudokuWebApp.Shared.Classes
 
         private ILogger _logger;
         private readonly IUserProfileService _userProfileService;
+        private readonly IIconService _iconService;
 
-        public GameState(IUserProfileService userProfileService, ILogger<GameState> logger)
+        public GameState(IUserProfileService userProfileService, IIconService iconService, 
+            ILogger<GameState> logger)
         {
             _userProfileService = userProfileService;
             _userProfileService.ProfileListUpdated += UserProfileListUpdated;
+            _iconService = iconService;
             _logger = logger;
+
             _logger.LogInformation("Initializing GameState.");
             foreach (var cell in GameGrid.GetEnumerableCells())
             {
                 cell.CellValueChanged += Cell_CellValueChanged;
             }
-            UserProfile = _userProfileService?.GetDefaultUserProfile();
+            SetUserProfileToDefault();
             AllUserProfiles = _userProfileService?.GetAllUserProfiles();
         }
 
@@ -44,10 +50,89 @@ namespace SudokuWebApp.Shared.Classes
 
         public IEnumerable<UserProfile>? AllUserProfiles { get; private set; }
 
+        public IEnumerable<UserProfile>? OtherUserProfiles
+            => AllUserProfiles?.Where(up => UserProfile == null
+                                            || up.UserProfileId != UserProfile.UserProfileId);
+
+        public void SetUserProfileToDefault()
+        {
+            int previousUserProfileId = UserProfile?.UserProfileId ?? 0;
+            int defaultUserProfileId = SudokuDataAccess.Models.UserProfile.DefaultId;
+
+            if (defaultUserProfileId != previousUserProfileId)
+            {
+                UserProfile = _userProfileService?.GetDefaultUserProfile();
+                RequestRefresh();
+            }
+        }
+
+        public void SetUserProfile(int userProfileId)
+        {
+#pragma warning disable CS8604 // Possible null reference argument.
+                                // Disable because IsNullOrEmpty extension method can handle nulls.
+            if (AllUserProfiles.IsNullOrEmpty())
+            {
+                return;
+            }
+#pragma warning restore CS8604 // Possible null reference argument.
+
+            if (userProfileId <= 0)
+            {
+                return;
+            }
+
+            var selectedProfile = AllUserProfiles
+                                    .FirstOrDefault(up => up.UserProfileId == userProfileId);
+            if (selectedProfile != null) 
+            {
+                UserProfile = selectedProfile;
+                RequestRefresh();
+            }
+        }
+
+        public async Task AddOrUpdateUserProfileAsync(UserProfile userProfile)
+        {
+            var userProfileId = 
+                await _userProfileService.AddOrUpdateUserProfileAsync(userProfile);
+            if (userProfileId.HasValue)
+            {
+                SetUserProfile(userProfileId.Value);
+            }
+        }
+
+        public async Task RemoveCurrentUserProfileAsync()
+        {
+            // Can't remove the default user.
+            if (CurrentUserIsDefault)
+            {
+                return;
+            }
+
+            bool removedSuccessfully = true;
+            if (UserProfile != null)
+            {
+                removedSuccessfully = await _userProfileService.RemoveUserProfileAsync(UserProfile);
+            }
+
+            if (removedSuccessfully)
+            {
+                SetUserProfileToDefault();
+            }
+        }
+
         private void UserProfileListUpdated()
         {
             AllUserProfiles = _userProfileService?.GetAllUserProfiles();
         }
+
+        public int CurrentUserIconId => UserProfile?.IconId ?? 0;
+        public bool CurrentUserIsDefault 
+            => (UserProfile?.UserProfileId ?? 0) == UserProfile.DefaultId;
+
+        public IEnumerable<Icon>? UnusedAndCurrentIcons 
+            => _iconService.GetUnusedAndCurrentIcons(CurrentUserIconId);
+
+        public IEnumerable<Icon>? UnusedIcons => _iconService.GetUnusedIcons();
 
         public bool IsProfilePanelVisible { get; set; } = false;
 

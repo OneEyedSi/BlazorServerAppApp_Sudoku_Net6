@@ -15,6 +15,16 @@
 
 @code {
 
+    protected override void OnInitialized()
+    {
+        GameState.RefreshRequested += RefreshMe;
+    }
+
+    public void Dispose()
+    {
+        GameState.RefreshRequested -= RefreshMe;
+    }
+
     private void TogglePanel()
     {
         if (GameState == null)
@@ -36,5 +46,10 @@
             }
             return "oi-caret-bottom";
         }
+    }
+
+    private async void RefreshMe()
+    {
+        await InvokeAsync(() => StateHasChanged());
     }
 }

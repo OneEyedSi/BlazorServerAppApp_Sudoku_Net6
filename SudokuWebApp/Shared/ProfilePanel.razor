@@ -1,34 +1,46 @@
 ﻿@using classlib = SudokuClassLibrary
-@using dataServices = SudokuClassLibrary.DataServices
-@inject dataServices.IUserProfileService userProfileService
+@inject IUserProfileService userProfileService
 @inject GameState GameState
 
 <div class="profile-panel @ShowPanelClass">
     @if (GameState != null)
     {
-        @foreach (var profile in GameState.AllUserProfiles)
+        @foreach (var profile in GameState.OtherUserProfiles)
         {
-            <div>
+            <div class="clickable" @onclick="() => SetUserProfile(profile.UserProfileId)">
                 <img src=@profile.Icon.Path class="profile-panel-image"/>
                 <span>@profile.Name</span>
             </div>
         }
     }
-    <div class="profile-panel-cmd">
+    <div class="@ModifyProfileClass">
         <span class="oi oi-pencil" aria-hidden="true" />
-        <span class="profile-panel-text">Edit @CurrentProfileName profile</span>
+        <span @onclick="() => ShowProfileEditor(addNewProfile: false)">Edit @CurrentProfileName profile</span>
     </div>
-    <div class="profile-panel-cmd">
+    <div class="@ModifyProfileClass">
         <span class="oi oi-minus" aria-hidden="true" />
-        <span class="profile-panel-text">Remove @CurrentProfileName profile</span>
+        <span @onclick="RemoveCurrentProfileAsync">Remove @CurrentProfileName profile</span>
     </div>
     <div class="profile-panel-cmd">
         <span class="oi oi-plus" aria-hidden="true" />
-        <span class="profile-panel-text">New profile</span>
+        <span @onclick="() => ShowProfileEditor(addNewProfile: true)">New profile</span>
     </div>
 </div>
 
+@if (ProfileEditorIsVisible)
+{
+    <ProfileEditorDialog
+        AddNewProfile="AddNewProfile" 
+        OnClose="CloseProfileEditor" />
+}
+
 @code {
+
+    private bool ProfileEditorIsVisible { get; set; } = false;
+
+    private bool IsDefaultProfile => GameState.CurrentUserIsDefault;
+
+    private bool AddNewProfile { get; set; } = false;
 
     protected override void OnInitialized()
     {
@@ -52,10 +64,46 @@
         }
     }
 
+    private string ModifyProfileClass => IsDefaultProfile ? "profile-panel-cmd disabled" : "profile-panel-cmd";
+
     private string? CurrentProfileName => GameState?.UserProfile?.Name;
+
+    private void SetUserProfile(int userProfileId)
+    {
+        GameState.SetUserProfile(userProfileId);
+        CloseProfilePanel();
+    }
 
     private async void RefreshMe()
     {
         await InvokeAsync(() => StateHasChanged());
+    }
+
+    private void ShowProfileEditor(bool addNewProfile)
+    {
+        // Cannot edit default profile.
+        if (!addNewProfile && IsDefaultProfile)
+        {
+            return;
+        }
+        AddNewProfile = addNewProfile;
+        ProfileEditorIsVisible = true;
+    }
+
+    private void CloseProfileEditor()
+    {
+        ProfileEditorIsVisible = false;
+        CloseProfilePanel();
+    }
+
+    private async Task RemoveCurrentProfileAsync()
+    {
+        await GameState.RemoveCurrentUserProfileAsync();
+    }
+
+    private void CloseProfilePanel()
+    {
+        GameState.IsProfilePanelVisible = false;
+        GameState.RequestRefresh();
     }
 }

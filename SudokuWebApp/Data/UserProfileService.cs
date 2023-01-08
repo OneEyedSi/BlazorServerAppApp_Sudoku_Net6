@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SudokuClassLibrary.DataServices
+namespace SudokuWebApp.Data
 {
     public class UserProfileService : IUserProfileService
     {
@@ -55,14 +55,19 @@ namespace SudokuClassLibrary.DataServices
 
         public async Task<int?> AddOrUpdateUserProfileAsync(int userProfileId, string name, int iconId)
         {
+            var userProfile = new UserProfile() { UserProfileId = userProfileId, Name = name, IconId = iconId };
+            
+            return await AddOrUpdateUserProfileAsync(userProfile);
+        }
+
+        public async Task<int?> AddOrUpdateUserProfileAsync(UserProfile userProfile)
+        {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
             if (dbContext == null)
             {
                 return null;
             }
-
-            var userProfile = new UserProfile() { UserProfileId = userProfileId, Name = name, IconId = iconId };
 
             // Update will create the record if the Id field is not set (ie is 0).
             dbContext.Update(userProfile);

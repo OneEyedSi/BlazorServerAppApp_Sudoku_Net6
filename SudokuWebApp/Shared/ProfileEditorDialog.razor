@@ -1,0 +1,148 @@
+﻿@using SudokuDataAccess.Models
+@using SudokuDataAccess.Models.Reference;
+@inject GameState GameState
+
+<div class="dialog-container">
+    <div class="profile-editor">
+        <div class="dialog-title-generic">
+            <span>@Title</span>
+        </div>
+        <EditForm EditContext=ValidationContext OnSubmit=SubmitProfile >
+
+            <div class="profile-field first">
+                <label>Name:</label>
+                <InputText @bind-Value="Profile.Name" />
+            </div>
+            @*Editing the Guest account will be disabled in the calling code so we don't need to 
+            worry about it here.*@
+            <div class="profile-field">
+                <label>Select an icon:</label>
+                @foreach(var icon in Icons)
+                {
+                    <img src="@icon.Path" 
+                        class="@GetIconClass(icon.IconId)" 
+                        @onclick="() => IconClicked(icon.IconId)"/>
+                }
+            </div>
+
+            <div class="profile-message @ErrorClass">@ErrorMessage</div>
+
+            <div class="dialog-buttons-two">
+                @*Must set the type of the cancel button to "button", which leaves the button 
+                functionality to be determined by the onclick event.  If the type is undefined 
+                it will default to "submit", giving it the same functionality as the OK button.*@
+                <button class="btn btn-secondary" type="button" @onclick="CancelClicked">Cancel</button>
+                <button class="btn btn-primary" type="submit">OK</button>
+            </div>
+
+            <DataAnnotationsValidator />
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public bool AddNewProfile { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private EditContext ValidationContext { get; set; }
+    private bool IsValidationError { get; set; } = false;
+    private string ErrorMessage => IsValidationError ? "Please enter a profile name and select an icon."
+                                                    : "";
+    private string ErrorClass => IsValidationError ? "alert-danger" : "";
+
+    private UserProfile Profile { get; set; }
+
+    private IEnumerable<Icon> Icons { get; set; }
+
+    protected override void OnInitialized()
+    {
+        GameState.RefreshRequested += RefreshMe;
+        SetupProfileAndIcons(AddNewProfile);
+        ValidationContext = new(Profile);
+    }
+
+    public void Dispose()
+    {
+        GameState.RefreshRequested -= RefreshMe;
+    }
+
+    private string? Title
+    {
+        get
+        {
+            if (AddNewProfile)
+            {
+                return "Add New Profile";
+            }
+            return $"Edit {Profile.Name} Profile";
+        }
+    }
+
+    private string GetIconClass(int iconId)
+    {
+        if (iconId == Profile.IconId)
+        {
+            return "icon-currentuser";
+        }
+        return "icon";
+    }
+
+    private void SetupProfileAndIcons(bool addNewProfile)
+    {
+        if (addNewProfile)
+        {
+            Icons = GameState.UnusedIcons;
+            Profile = new UserProfile();
+        }
+        else
+        {
+            Icons = GameState.UnusedAndCurrentIcons;
+            Profile = new UserProfile();
+
+            var currentUserProfile = GameState?.UserProfile;
+
+            if (currentUserProfile != null)
+            {
+                Profile.UserProfileId = currentUserProfile.UserProfileId;
+                Profile.Name = currentUserProfile.Name;
+                Profile.IconId = currentUserProfile.IconId;
+            }
+        }
+    }
+
+    private async Task IconClicked(int iconId)
+    {
+        Profile.IconId = iconId;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task CancelClicked()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SubmitProfile()
+    {
+        IsValidationError = !ValidationContext.Validate();
+        if (IsValidationError)
+        {
+            return;
+        }
+
+        if (Profile.UserProfileId == 0 
+        || Profile.Name != (GameState?.UserProfile?.Name ?? "") 
+        || Profile.IconId != (GameState?.UserProfile?.IconId ?? 0))
+        {
+            await GameState?.AddOrUpdateUserProfileAsync(Profile);
+        }
+
+        await OnClose.InvokeAsync();
+    }
+
+    private async void RefreshMe()
+    {
+        await InvokeAsync(() => StateHasChanged());
+    }
+}

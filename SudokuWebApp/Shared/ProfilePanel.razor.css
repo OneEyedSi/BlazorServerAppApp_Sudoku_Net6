@@ -19,4 +19,14 @@
 
     .profile-panel-cmd {
         padding-left: 0.3rem !important;
+        cursor: pointer;
     }
+
+.clickable {
+    cursor: pointer;
+}
+
+.disabled {
+    opacity: 0.65;
+    cursor: default !important;
+}

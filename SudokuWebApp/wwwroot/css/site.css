@@ -212,7 +212,7 @@ a, .btn-link {
 
 .dialog-body {
     flex-grow: 1;
-    padding: 0.5rem 3rem 1rem 0;
+    padding: 0.5rem 0 1rem 0;
 }
 
 .dialog-body > div {

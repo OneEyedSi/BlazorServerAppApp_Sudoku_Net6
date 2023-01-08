@@ -1,0 +1,54 @@
+.icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    vertical-align: top;
+}
+
+.icon-currentuser {
+    background-color: lemonchiffon;
+    outline: 1px solid #26b050;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.profile-editor {
+    background-color: white;
+    box-shadow: 0 0 12px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    z-index: 2000;
+    align-self: center;
+    margin: auto;
+    width: 450px;
+    max-height: calc(100% - 3rem);
+    animation: dialog-entry 0.4s;
+    animation-timing-function: cubic-bezier(0.075, 0.820, 0.165, 1.000);
+}
+
+.profile-field {
+    display: flex;
+    margin: 0.5rem;
+}
+
+    .profile-field label {
+        margin-left: 0.6rem;
+        margin-right: 0.5rem;
+        padding-top: 0.5rem;
+    }
+
+    .profile-field input {
+        flex-grow: 1;
+        margin-left: 4.1rem;
+        margin-right: 1.5rem;
+        padding-top: 0.5rem;
+    }
+
+    .first {
+        margin-top: 1.5rem;
+    }
+
+.profile-message {
+    height: 3.5rem;
+    padding: 1rem;
+    vertical-align: middle;
+}
