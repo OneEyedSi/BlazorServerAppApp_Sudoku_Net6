@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SudokuDataAccess.Models.Reference;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,13 @@ namespace SudokuDataAccess.Models
         public bool IsKillerSudoku { get; set; } = false;
         public string Title { get; set; }
         public DateTime TimeRecorded { get; set; } = DateTime.Now;
+
+        #region Parents ***************************************************************************
+
+        public int LevelId { get; set; }
+        public Level? Level { get; set; }
+
+        #endregion
 
         #region Children **************************************************************************
 
