@@ -13,6 +13,20 @@ namespace SudokuDataAccess.Models.Reference
         public int PositionId { get; set; }
         public int Row { get; set; }
         public int Column { get; set; }
+
+        public static int GetPositionIdFromRowAndColumn(int row, int column)
+        {
+            if (row < 0 || row > 8)
+            {
+                throw new ArgumentException($"Invalid row value: {row}.  Must be between 0 and 8.", "row");
+            }
+            if (column < 0 || column > 8)
+            {
+                throw new ArgumentException($"Invalid column value: {column}.  Must be between 0 and 8.", "column");
+            }
+
+            return row * 9 + column + 1;
+        }
     }
 
     #region Configuration *************************************************************************

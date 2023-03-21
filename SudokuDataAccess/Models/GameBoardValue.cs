@@ -9,6 +9,17 @@ namespace SudokuDataAccess.Models
 {
     public class GameBoardValue
     {
+        public GameBoardValue()
+        {
+
+        }
+
+        public GameBoardValue(int? value, int row, int column)
+        {
+            Value = value;
+            PositionId = Position.GetPositionIdFromRowAndColumn(row, column);
+        }
+
         public int GameBoardValueId { get; set; }
         public int? Value { get; set; }
 
