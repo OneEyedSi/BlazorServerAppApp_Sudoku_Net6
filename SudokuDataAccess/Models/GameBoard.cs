@@ -11,6 +11,7 @@ namespace SudokuDataAccess.Models
         public int GameBoardId { get; set; }
         public bool IsKillerSudoku { get; set; } = false;
         public string Title { get; set; }
+        public DateTime TimeRecorded { get; set; } = DateTime.Now;
 
         #region Children **************************************************************************
 
