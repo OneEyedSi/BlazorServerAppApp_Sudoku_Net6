@@ -81,6 +81,33 @@ namespace SudokuClassLibrary
             }
         }
 
+        public void LoadGame(IEnumerable<Cell> initialCells, bool isKillerSudoku)
+        {
+            this.Groups.Clear();
+            InitializeCells();
+            AddGroups(isKillerSudoku);
+            if (!initialCells.IsNullOrEmpty())
+            {
+                foreach(var cell in initialCells)
+                {
+                    var gridCell = GetCellByPosition(cell.Position);
+                    if (gridCell != null)
+                    {
+                        gridCell.SetInitialValue(cell.GetValue(), isReplayingHistory: true);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the cells with initial values.
+        /// </summary>
+        /// <returns>IEnumerable<Cell></returns>
+        public IEnumerable<Cell> GetInitialCells()
+        {
+            return GetEnumerableCells().Where(c => c.IsInitialValue);
+        }
+
         /// <summary>
         /// Converts the 2D array of Cells into an enumerable, making it easy to iterate over.
         /// </summary>
@@ -122,13 +149,13 @@ namespace SudokuClassLibrary
             return this.Cells[row, column];
         }
 
-        private void AddGroups(bool isKillerSodoku)
+        private void AddGroups(bool isKillerSudoku)
         {
             AddRowGroups();
             AddColumnGroups();
             AddSquareGroups();
 
-            if (isKillerSodoku)
+            if (isKillerSudoku)
             {
                 AddDiagonalGroups();
             }
