@@ -15,14 +15,14 @@ namespace SudokuDataAccess.Models
         public int UserProfileId { get; set; }
         public UserProfile? UserProfile {  get; set; }
 
-        public int GameBoardId { get; set; }
-        public GameBoard? GameBoard { get; set; }
+        public int GameId { get; set; }
+        public Game? Game { get; set; }
 
         #endregion
 
         #region Children **************************************************************************
 
-        public List<GameRun> Runs { get; set; }
+        public List<GameRun> Runs { get; set; } = new List<GameRun>();
 
         #endregion
     }

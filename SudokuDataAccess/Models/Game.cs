@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace SudokuDataAccess.Models
 {
-    public class GameBoard
+    public class Game
     {
-        public int GameBoardId { get; set; }
+        public int GameId { get; set; }
         public bool IsKillerSudoku { get; set; } = false;
         public string Title { get; set; }
         public DateTime TimeRecorded { get; set; } = DateTime.Now;
+        public int Hash { get; set; }
 
         #region Parents ***************************************************************************
 
@@ -24,7 +25,7 @@ namespace SudokuDataAccess.Models
         #region Children **************************************************************************
 
         public List<UserGame> UserGames { get; set; }
-        public List<GameBoardValue> Values { get; set; }
+        public List<GameInitialValue> Values { get; set; }
 
         #endregion
     }

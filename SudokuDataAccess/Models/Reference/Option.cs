@@ -31,7 +31,7 @@ namespace SudokuDataAccess.Models.Reference
                             Description = "Highlight squares with only one possible value in pale yellow" },
                 new Option { OptionId = 3, 
                             Name = "HighlightUniquePossibleValueInGroup", 
-                            Description = "ighlight squares with possible value unique in row, column, square or diagonal in pale orange" }
+                            Description = "Highlight squares with possible value unique in row, column, square or diagonal in pale orange" }
             };
 
             builder.HasData(options);

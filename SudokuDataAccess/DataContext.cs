@@ -46,8 +46,8 @@ namespace SudokuDataAccess
 
         #region Unplayed Game Entities ************************************************************
 
-        public DbSet<GameBoard> GameBoards { get; set; }
-        public DbSet<GameBoardValue> GameBoardValues { get; set; }
+        public DbSet<Game> Games { get; set; }
+        public DbSet<GameInitialValue> GameInitialValues { get; set; }
 
         #endregion
 
@@ -57,7 +57,7 @@ namespace SudokuDataAccess
         public DbSet<GameRun> GameRuns { get; set; }
         public DbSet<GameRunOption> GameRunOptions { get; set; }
         public DbSet<GameRunValue> GameRunValues { get; set; }
-        public DbSet<GameRunHistoryEntry> GameRunHistoryEntry { get; set; }
+        public DbSet<GameRunHistoryEntry> GameRunHistoryEntries { get; set; }
 
         #endregion
     }

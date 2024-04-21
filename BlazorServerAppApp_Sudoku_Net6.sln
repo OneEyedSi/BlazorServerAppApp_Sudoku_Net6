@@ -19,6 +19,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{BC29555F-64FB-4298-944A-8B8657495795}"
 	ProjectSection(SolutionItems) = preProject
 		Documentation\SmileyFace_RecalculatingColours.xlsx = Documentation\SmileyFace_RecalculatingColours.xlsx
+		Documentation\SudokuGameDatabaseDiagram.vsdx = Documentation\SudokuGameDatabaseDiagram.vsdx
 		Documentation\SudokuGameStateDiagram.vsdx = Documentation\SudokuGameStateDiagram.vsdx
 	EndProjectSection
 EndProject

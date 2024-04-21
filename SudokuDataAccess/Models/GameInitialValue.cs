@@ -7,27 +7,27 @@ using System.Threading.Tasks;
 
 namespace SudokuDataAccess.Models
 {
-    public class GameBoardValue
+    public class GameInitialValue
     {
-        public GameBoardValue()
+        public GameInitialValue()
         {
 
         }
 
-        public GameBoardValue(int? value, int row, int column)
+        public GameInitialValue(int? value, int row, int column)
         {
             Value = value;
             PositionId = Position.GetPositionIdFromRowAndColumn(row, column);
         }
 
-        public int GameBoardValueId { get; set; }
+        public int GameInitialValueId { get; set; }
         public int? Value { get; set; }
 
 
         #region Parents ***************************************************************************
 
-        public int GameBoardId { get; set; }
-        public GameBoard? GameBoard {  get; set; }
+        public int GameId { get; set; }
+        public Game? Game {  get; set; }
 
         public int PositionId { get; set; }
         public Position? Position {  get; set; }
