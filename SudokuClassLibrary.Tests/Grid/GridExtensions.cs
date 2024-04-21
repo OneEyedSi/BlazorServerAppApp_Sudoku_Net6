@@ -100,5 +100,23 @@ namespace SudokuClassLibrary.Tests.Grid
                     throw new ApplicationException($"Invalid CellGroups Count for {groupType} CellGroups with index {groupIndex}.");
             }
         }
+
+        public static void PopulateAllCells(this Sudoku.Grid grid)
+        {
+            // Set every cell value, ensuring that the same values do not appear in the same row 
+            // or column.
+            for (int row = 0; row <= 8; row++)
+            {
+                int rowOffset = (row % 3) * 3;
+                // Integer division.
+                int squareOffset = row / 3;
+                for (int column = 0; column <= 8; column++)
+                {
+                    var cell = grid.Cells[row, column];
+                    int value = ((column + rowOffset + squareOffset) % 9) + 1;
+                    cell.SetValue(value);
+                }
+            }
+        }
     }
 }
