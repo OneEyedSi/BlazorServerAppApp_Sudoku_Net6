@@ -292,17 +292,8 @@ namespace SudokuClassLibrary.Tests.Grid
         {
             // Arrange
             Sudoku.Grid grid = new();
-            // Set every cell value, ensuring that the same values do not appear in the same row 
-            // or column.
-            for (int row = 0; row<= 8; row++)
-            {
-                for (int column = 0; column<= 8; column++) 
-                { 
-                    var cell = grid.Cells[row, column];
-                    cell.SetValue(((column + row) % 9) + 1);
-                }
-            }
-
+            // Set every cell value.
+            grid.PopulateAllCells();
             int numberOfCellsWithValuesBefore = grid.GetEnumerableCells().Count(c => c.GetValue().HasValue);
 
             // Act
